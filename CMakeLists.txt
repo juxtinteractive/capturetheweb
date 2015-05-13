@@ -146,7 +146,7 @@ endif()
 
 # Determine the platform.
 if(OS_MACOSX)
-  # set(CEF_URL https://cefbuilds.s3.amazonaws.com/2272/mac64/41.0.2272.76/cef_binary_3.2272.2077_macosx64.7z)
+  set(CEF_URL https://cefbuilds.s3.amazonaws.com/2272/mac64/41.0.2272.76/cef_binary_3.2272.2077_macosx64.7z)
 elseif(OS_LINUX)
   # set(CEF_URL https://cefbuilds.s3.amazonaws.com/2357/linux32/43.0.2357.18/cef_binary_3.2357.1267.g75b5dd4_linux32.7z)
 elseif(OS_WINDOWS)
