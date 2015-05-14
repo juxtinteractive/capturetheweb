@@ -647,7 +647,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CEF_LINKER_FLAGS_RELEASE} ${CEF_SHARED_
 # Include target subdirectories.
 #
 
-add_subdirectory(cefsimple)
+add_subdirectory(cefclient)
 
 
 #
