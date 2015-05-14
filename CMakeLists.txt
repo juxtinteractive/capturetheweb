@@ -147,17 +147,18 @@ endif()
 # Determine the platform.
 if(OS_MACOSX)
   set(CEF_URL https://cefbuilds.s3.amazonaws.com/2272/mac64/41.0.2272.76/cef_binary_3.2272.2077_macosx64.7z)
+  set(SYPHON_URL http://syphon-framework.googlecode.com/files/Syphon%20SDK%20Public%20Beta%202.zip)
 elseif(OS_LINUX)
   # set(CEF_URL https://cefbuilds.s3.amazonaws.com/2357/linux32/43.0.2357.18/cef_binary_3.2357.1267.g75b5dd4_linux32.7z)
 elseif(OS_WINDOWS)
   # set(CEF_URL https://cefbuilds.s3.amazonaws.com/2357/win/43.0.2357.18/cef_binary_3.2357.1267.g75b5dd4_windows32.7z)
 endif()
 
+
+
 if(NOT DEFINED CEF_URL)
   message(FATAL_ERROR "No download URL specified for Chromium Embedded Framework")
 endif()
-
-
 # Define CEF3 build as an external project.
 ExternalProject_Add(
     cef
@@ -405,6 +406,31 @@ if(OS_MACOSX)
   ExternalProject_Get_Property(cef BINARY_DIR)
   set(CEF_LIB_WRAPPER_DEBUG   "${BINARY_DIR}/libcef_dll/Debug/libcef_dll_wrapper.a")
   set(CEF_LIB_WRAPPER_RELEASE "${BINARY_DIR}/libcef_dll/Release/libcef_dll_wrapper.a")
+
+
+
+  # Syphon as an external project
+  ExternalProject_Add(
+      syphon
+      URL ${SYPHON_URL}
+      PREFIX ${CMAKE_CURRENT_BINARY_DIR}/vendor/syphon
+      CONFIGURE_COMMAND ""
+      BUILD_COMMAND echo "whatapp"
+      INSTALL_COMMAND ""
+  )
+
+  # Source include Syphon directory.
+  ExternalProject_Get_Property(syphon SOURCE_DIR)
+  include_directories(${SOURCE_DIR})
+
+  # Syphon directory paths.
+  set(SYPHON_BINARY_DIR          "${SOURCE_DIR}")
+  set(SYPHON_BINARY_DIR_DEBUG    "${SOURCE_DIR}")
+  set(SYPHON_BINARY_DIR_RELEASE  "${SOURCE_DIR}")
+
+  # Syphon library paths.
+  set(SYPHON_LIB_DEBUG   "${SYPHON_BINARY_DIR_DEBUG}/Syphon.framework/Versions/A/Syphon")
+  set(SYPHON_LIB_RELEASE "${SYPHON_BINARY_DIR_RELEASE}/Syphon.framework/Versions/A/Syphon")
 
 endif()
 

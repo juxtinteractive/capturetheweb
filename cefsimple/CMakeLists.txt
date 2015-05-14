@@ -124,11 +124,12 @@ if(OS_MACOSX)
   # Variable referenced from Info.plist files.
   set(PRODUCT_NAME "${CEF_TARGET}")
 
+  ADD_LOGICAL_TARGET("libcef_dll_wrapper" "${CEF_LIB_WRAPPER_DEBUG}" "${CEF_LIB_WRAPPER_RELEASE}")
+  ADD_LOGICAL_TARGET("syphon_lib" "${SYPHON_LIB_DEBUG}" "${SYPHON_LIB_RELEASE}")
+
   # Helper executable target.
   add_executable(${CEF_HELPER_TARGET} MACOSX_BUNDLE ${CEFSIMPLE_HELPER_SRCS})
   add_dependencies(${CEF_HELPER_TARGET} cef)
-
-  ADD_LOGICAL_TARGET("libcef_dll_wrapper" "${CEF_LIB_WRAPPER_DEBUG}" "${CEF_LIB_WRAPPER_RELEASE}")
   target_link_libraries(${CEF_HELPER_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
   set_target_properties(${CEF_HELPER_TARGET} PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/mac/helper-Info.plist
@@ -139,8 +140,7 @@ if(OS_MACOSX)
 
   # Main executable target.
   add_executable(${CEF_TARGET} MACOSX_BUNDLE ${CEFSIMPLE_RESOURCES_SRCS} ${CEFSIMPLE_SRCS})
-  #add_dependencies(${CEF_TARGET} libcef_dll_wrapper "${CEF_HELPER_TARGET}")
-  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
+  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper syphon_lib ${CEF_STANDARD_LIBS})
   set_target_properties(${CEF_TARGET} PROPERTIES
     RESOURCE "${CEFSIMPLE_RESOURCES_SRCS}"
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/mac/Info.plist
@@ -158,6 +158,10 @@ if(OS_MACOSX)
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CEF_BINARY_DIR}/Chromium Embedded Framework.framework"
             "${CEF_APP}/Contents/Frameworks/Chromium Embedded Framework.framework"
+    # Copy the Syphon framework into the Frameworks directory.
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${SYPHON_BINARY_DIR}/Syphon.framework"
+            "${CEF_APP}/Contents/Frameworks/Syphon.framework"
     VERBATIM
     )
 
