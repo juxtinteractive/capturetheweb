@@ -147,7 +147,7 @@ endif()
 # Determine the platform.
 if(OS_MACOSX)
   set(CEF_URL https://cefbuilds.s3.amazonaws.com/2272/mac64/41.0.2272.76/cef_binary_3.2272.2077_macosx64.7z)
-  set(SYPHON_URL http://syphon-framework.googlecode.com/files/Syphon%20SDK%20Public%20Beta%202.zip)
+  set(SYPHON_URL https://github.com/Syphon/Syphon-Framework/archive/c66e51c2e6f6a54184284617f8d5fd44c48ed3c9.zip)
 elseif(OS_LINUX)
   # set(CEF_URL https://cefbuilds.s3.amazonaws.com/2357/linux32/43.0.2357.18/cef_binary_3.2357.1267.g75b5dd4_linux32.7z)
 elseif(OS_WINDOWS)
@@ -415,22 +415,19 @@ if(OS_MACOSX)
       URL ${SYPHON_URL}
       PREFIX ${CMAKE_CURRENT_BINARY_DIR}/vendor/syphon
       CONFIGURE_COMMAND ""
-      BUILD_COMMAND echo "whatapp"
+      BUILD_COMMAND ${CMAKE_COMMAND} -E copy_directory ../syphon ./ COMMAND xcodebuild ARCHS=${CMAKE_OSX_ARCHITECTURES} ONLY_ACTIVE_ARCH=NO -configuration $<CONFIGURATION> build
       INSTALL_COMMAND ""
   )
 
   # Source include Syphon directory.
-  ExternalProject_Get_Property(syphon SOURCE_DIR)
-  include_directories(${SOURCE_DIR})
-
-  # Syphon directory paths.
-  set(SYPHON_BINARY_DIR          "${SOURCE_DIR}")
-  set(SYPHON_BINARY_DIR_DEBUG    "${SOURCE_DIR}")
-  set(SYPHON_BINARY_DIR_RELEASE  "${SOURCE_DIR}")
+  ExternalProject_Get_Property(syphon BINARY_DIR)
+  include_directories("${BINARY_DIR}/build/$<CONFIGURATION>/Syphon.framework/Headers")
 
   # Syphon library paths.
-  set(SYPHON_LIB_DEBUG   "${SYPHON_BINARY_DIR_DEBUG}/Syphon.framework/Versions/A/Syphon")
-  set(SYPHON_LIB_RELEASE "${SYPHON_BINARY_DIR_RELEASE}/Syphon.framework/Versions/A/Syphon")
+  ExternalProject_Get_Property(syphon BINARY_DIR)
+  set(SYPHON_BINARY_DIR  "${BINARY_DIR}/build/$<CONFIGURATION>")
+  set(SYPHON_LIB_DEBUG   "${BINARY_DIR}/build/Debug/Syphon.framework/Versions/A/Syphon")
+  set(SYPHON_LIB_RELEASE "${BINARY_DIR}/build/Release/Syphon.framework/Versions/A/Syphon")
 
 endif()
 
