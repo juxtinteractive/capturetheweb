@@ -1,15 +1,27 @@
-# CEF CMake ExternalProject Sample
+# capturetheweb
 
-Example of how ExternalProject_Add can be used to load a [CEF3 Builds](https://cefbuilds.com/) as a dependency in our own cmake project.
+A web browser that feeds whatever it renders to Syphon.
+
+
+## Usage
+
+Start browser (`cefclient.app`), then start a Syphon Client and see the browser's contents being streamed!
+
+Simple Client is a good Syphon client ([download](https://github.com/Syphon/Simple/releases/download/public-beta-2/Syphon.Demo.Apps.Public.Beta.2.dmg)).
+
 
 ## Caveats
 
-The example only works on Windows and Mac, but similar modifications can be made to work on Linux.
+Mac only! (for now)
+
 
 ## Build
 
   1. Clone repo
-  2. Setup URL in [CMakeLists.txt](CMakeLists.txt#L147). (Find build URLs on [CEF3 Builds](https://cefbuilds.com/))
+  2. `cd` into the cloned directory
   3. `mkdir build && cd build`
-  5. `cmake -G "Visual Studio 12" ..`
-  6. `cmake --build .`  (CEF will be downloaded in this step)
+  5. `cmake -G "Xcode" -DPROJECT_ARCH="x86_64" ..`
+  6. `cmake --build .`
+  7. When the build fails because `Syphon.h` doesn't have an empty line at the end of the file ... add an empty line at the end of `Syphon.h`.
+  8. `cmake --build .`
+  9. Now the project should build, and the result should be in `<REPO>/build/cefclient/Debug/cefclient.app`
