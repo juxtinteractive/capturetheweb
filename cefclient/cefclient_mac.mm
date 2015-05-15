@@ -442,25 +442,25 @@ void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
   // Populate the browser settings based on command line arguments.
   client::MainContext::Get()->PopulateBrowserSettings(&settings);
 
-  CefRefPtr<CefCommandLine> command_line =
-      CefCommandLine::GetGlobalCommandLine();
-  if (command_line->HasSwitch(client::switches::kOffScreenRenderingEnabled)) {
-    const bool transparent =
-        command_line->HasSwitch(client::switches::kTransparentPaintingEnabled);
-    const bool show_update_rect =
-        command_line->HasSwitch(client::switches::kShowUpdateRect);
 
-    CefRefPtr<client::OSRWindow> osr_window =
-        client::OSRWindow::Create(&g_main_browser_provider, transparent,
-            show_update_rect, contentView,
-            CefRect(0, 0, kWindowWidth, kWindowHeight));
-    window_info.SetAsWindowless(osr_window->GetWindowHandle(), transparent);
-    g_handler->SetOSRHandler(osr_window->GetRenderHandler().get());
-  } else {
-    // Initialize window info to the defaults for a child window.
-    window_info.SetAsChild(contentView, 0, 0, kWindowWidth, kWindowHeight);
-  }
 
+  
+  
+  const bool transparent = true;//command_line->HasSwitch(client::switches::kTransparentPaintingEnabled);
+  const bool show_update_rect = false; //command_line->HasSwitch(client::switches::kShowUpdateRect);
+
+  CefRefPtr<client::OSRWindow> osr_window =
+      client::OSRWindow::Create(&g_main_browser_provider, transparent,
+          show_update_rect, contentView,
+          CefRect(0, 0, kWindowWidth, kWindowHeight));
+  window_info.SetAsWindowless(osr_window->GetWindowHandle(), transparent);
+  g_handler->SetOSRHandler(osr_window->GetRenderHandler().get());
+
+  
+  
+  
+  
+  
   CefBrowserHost::CreateBrowser(window_info, g_handler.get(),
                                 g_handler->GetStartupURL(), settings, NULL);
 

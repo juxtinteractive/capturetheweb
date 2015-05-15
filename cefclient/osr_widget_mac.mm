@@ -19,7 +19,11 @@
 #include "cefclient/osr_renderer.h"
 #include "cefclient/resource_util.h"
 
+#import <Syphon.h>
+
 namespace {
+
+   SyphonServer *syServer;
 
 // This method will return YES for OS X versions 10.7.3 and later, and NO
 // otherwise.
@@ -123,6 +127,12 @@ ClientOSRHandler::ClientOSRHandler(ClientOpenGLView* view,
              name:NSWindowDidChangeBackingPropertiesNotification
            object:[view_ window]];
   }
+
+   //syph start - Create a Syphon server
+   NSOpenGLContext* NScontext = [view_ openGLContext];
+   CGLContextObj cglContext = (CGLContextObj) NScontext.CGLContextObj;
+   syServer = [[SyphonServer alloc] initWithName:@"My Output" context:cglContext options:nil];
+   //syph end
 }
 
 ClientOSRHandler:: ~ClientOSRHandler() {
@@ -246,6 +256,8 @@ void ClientOSRHandler::OnPaint(CefRefPtr<CefBrowser> browser,
                                const RectList& dirtyRects,
                                const void* buffer,
                                int width, int height) {
+  unsigned int texId;
+  
   CEF_REQUIRE_UI_THREAD();
 
   if (!view_)
@@ -258,13 +270,35 @@ void ClientOSRHandler::OnPaint(CefRefPtr<CefBrowser> browser,
 
   ScopedGLContext scoped_gl_context(view_, true);
 
-  view_->renderer_->OnPaint(browser, type, dirtyRects, buffer, width, height);
+  texId = view_->renderer_->OnPaint(browser, type, dirtyRects, buffer, width, height);
 
   if (type == PET_VIEW && !view_->renderer_->popup_rect().IsEmpty()) {
     painting_popup_ = true;
     browser->GetHost()->Invalidate(PET_POPUP);
     painting_popup_ = false;
   }
+
+
+//syph start - publish syphon frame
+    // We only publish our frame if we have clients
+    if ([syServer hasClients])
+    {
+        NSRect rect = NSMakeRect(0, 0, view_->renderer_->GetViewWidth(), view_->renderer_->GetViewHeight());
+
+        // publish our frame to our server. We use the whole texture, but we could just publish a region of it
+        CGLLockContext(syServer.context);
+        [syServer publishFrameTexture:texId
+                        textureTarget:GL_TEXTURE_2D //was GL_TEXTURE_RECTANGLE_EXT
+                          imageRegion:rect
+                    textureDimensions:rect.size
+                              flipped:YES];
+        CGLUnlockContext(syServer.context);
+    }
+//syph end
+
+
+
+
 
   view_->renderer_->Render();
 }
