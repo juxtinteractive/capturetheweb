@@ -257,12 +257,10 @@ if(OS_MACOSX)
   # Variable referenced from Info.plist files.
   set(PRODUCT_NAME "${CEF_TARGET}")
 
-  # Logical target used to link the syphon library.
-  ADD_LOGICAL_TARGET("syphon_lib" "${SYPHON_LIB_DEBUG}" "${SYPHON_LIB_RELEASE}")
 
   # Helper executable target.
   add_executable(${CEF_HELPER_TARGET} MACOSX_BUNDLE ${CEFCLIENT_HELPER_SRCS})
-  add_dependencies(${CEF_HELPER_TARGET} libcef_dll_wrapper)
+  add_dependencies(${CEF_HELPER_TARGET} cef)
   target_link_libraries(${CEF_HELPER_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
   set_target_properties(${CEF_HELPER_TARGET} PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/mac/helper-Info.plist
@@ -271,9 +269,14 @@ if(OS_MACOSX)
   # Fix the framework link in the helper executable.
   FIX_MACOSX_HELPER_FRAMEWORK_LINK(${CEF_HELPER_TARGET} ${CEF_HELPER_APP})
 
+
+  # Logical target used to link the syphon library.
+  ADD_LOGICAL_TARGET("syphon_lib" "${SYPHON_LIB_DEBUG}" "${SYPHON_LIB_RELEASE}")
+
   # Main executable target.
   add_executable(${CEF_TARGET} MACOSX_BUNDLE ${CEFCLIENT_RESOURCES_SRCS} ${CEFCLIENT_SRCS})
-  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper syphon_lib ${CEF_STANDARD_LIBS} "-framework OpenGL")
+  add_dependencies(${CEF_TARGET} ${CEF_HELPER_TARGET} cef syphon)
+  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper syphon_lib  ${CEF_STANDARD_LIBS} "-framework OpenGL")
   set_target_properties(${CEF_TARGET} PROPERTIES
     RESOURCE "${CEFCLIENT_RESOURCES_SRCS}"
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/mac/Info.plist
