@@ -162,6 +162,7 @@ void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
 - (IBAction)goForward:(id)sender;
 - (IBAction)reload:(id)sender;
 - (IBAction)stopLoading:(id)sender;
+- (IBAction)goToBacon:(id)sender;
 - (IBAction)takeURLStringValueFrom:(NSTextField *)sender;
 - (void)alert:(NSString*)title withMessage:(NSString*)message;
 @end
@@ -212,6 +213,11 @@ void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
 - (IBAction)stopLoading:(id)sender {
   if (g_handler.get() && g_handler->GetBrowserId())
     g_handler->GetBrowser()->StopLoad();
+}
+
+- (IBAction)goToBacon:(id)sender {
+  if (g_handler.get() && g_handler->GetBrowserId())
+    g_handler->GetBrowser()->GetMainFrame()->LoadURL([@"https://www.google.com/search?q=bacon&espv=2&biw=1920&bih=1101&source=lnms&tbm=isch&sa=X&ei=saFbVcTnDYjboASXv4OQCg&ved=0CAYQ_AUoAQ" UTF8String]);
 }
 
 - (IBAction)takeURLStringValueFrom:(NSTextField *)sender {
@@ -429,6 +435,10 @@ void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
   button = MakeButton(&button_rect, @"Stop", contentView);
   [button setTarget:delegate];
   [button setAction:@selector(stopLoading:)];
+  
+  button = MakeButton(&button_rect, @"Bacon", contentView);
+  [button setTarget:delegate];
+  [button setAction:@selector(goToBacon:)];
 
   // Create the URL text field.
   button_rect.origin.x += BUTTON_MARGIN;
