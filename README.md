@@ -7,7 +7,17 @@ A web browser that feeds whatever it renders to Syphon.
 
 Start browser (`cefclient.app`), then start a Syphon Client and see the browser's contents being streamed!
 
-Simple Client is a good Syphon client ([download](https://github.com/Syphon/Simple/releases)).
+Send OSC messages on port `7000`. Current commands are below.
+
+  - `string`: any string is assumed to be a URL, and the browser will navigate to it.
+  - `float`: any float value will trigger a mouse move event. `0.0` is top left and `1.0` is bottom right of the window (any value inbetween is a point on the line between those two positions, e.g. `0.5` is the middle of the window).
+
+
+### Syphon & OSC test apps
+
+Simple Client is a good Syphon client ([download page](https://github.com/Syphon/Simple/releases)).
+
+OSCTestApp is good for testing OSC ([download page](https://github.com/mrRay/vvopensource#im-not-a-programmer-i-just-want-to-download-a-midiosc-test-application)).
 
 
 ## Caveats
