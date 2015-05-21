@@ -32,6 +32,6 @@ Mac only! (for now)
   3. `mkdir build && cd build`
   5. `cmake -G "Xcode" -DPROJECT_ARCH="x86_64" ..`
   6. `cmake --build .`
-  7. When the build fails because `Syphon.h` doesn't have an empty line at the end of the file ... add an empty line at the end of `Syphon.h`.
+  7. When the build fails because `Syphon.h` doesn't have an empty line at the end of the file ... so add an empty line at the end of `<REPO>/build/vendor/syphon/src/syphon-build/build/Debug/Syphon.framework/Headers/Syphon.h`.
   8. `cmake --build .`
   9. Now the project should build, and the result should be in `<REPO>/build/cefclient/Debug/cefclient.app`
