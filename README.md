@@ -7,7 +7,7 @@ A web browser that feeds whatever it renders to Syphon.
 
 Start browser (`cefclient.app`), then start a Syphon Client and see the browser's contents being streamed!
 
-Simple Client is a good Syphon client ([download](https://github.com/Syphon/Simple/releases/download/public-beta-2/Syphon.Demo.Apps.Public.Beta.2.dmg)).
+Simple Client is a good Syphon client ([download](https://github.com/Syphon/Simple/releases)).
 
 
 ## Caveats
