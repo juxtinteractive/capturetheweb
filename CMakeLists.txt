@@ -347,7 +347,7 @@ if(OS_MACOSX)
   set(CEF_COMPILER_FLAGS          "-fno-strict-aliasing -fstack-protector -funwind-tables -fvisibility=hidden -Wall -Wendif-labels -Werror -Wextra -Wnewline-eof -Wno-missing-field-initializers -Wno-unused-parameter")
   # -std=c99                        = Use the C99 language standard
   set(CEF_C_COMPILER_FLAGS        "-std=c99")
-  # -fno-exceptions                 = Disable exceptions
+  # -fno-exceptions                 = Disable exceptions (not used due to liboscpack using them)
   # -fno-rtti                       = Disable real-time type information
   # -fno-threadsafe-statics         = Don't generate thread-safe statics
   # -fobjc-call-cxx-cdtors          = Call the constructor/destructor of C++ instance variables in ObjC objects
@@ -355,7 +355,7 @@ if(OS_MACOSX)
   # -std=gnu++11                    = Use the C++11 language standard including GNU extensions
   # -Wno-narrowing                  = Don't warn about type narrowing
   # -Wsign-compare                  = Warn about mixed signed/unsigned type comparisons
-  set(CEF_CXX_COMPILER_FLAGS      "-fno-exceptions -fno-rtti -fno-threadsafe-statics -fobjc-call-cxx-cdtors -fvisibility-inlines-hidden -std=gnu++11 -Wno-narrowing -Wsign-compare")
+  set(CEF_CXX_COMPILER_FLAGS      "-fno-rtti -fno-threadsafe-statics -fobjc-call-cxx-cdtors -fvisibility-inlines-hidden -std=gnu++11 -Wno-narrowing -Wsign-compare")
   # -O0                             = Disable optimizations
   # -g                              = Generate debug information
   set(CEF_COMPILER_FLAGS_DEBUG    "-O0 -g")
