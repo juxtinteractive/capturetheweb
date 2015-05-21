@@ -148,14 +148,21 @@ endif()
 if(OS_MACOSX)
   set(CEF_URL https://cefbuilds.s3.amazonaws.com/2272/mac64/41.0.2272.76/cef_binary_3.2272.2077_macosx64.7z)
   set(SYPHON_URL https://github.com/Syphon/Syphon-Framework/archive/c66e51c2e6f6a54184284617f8d5fd44c48ed3c9.zip)
+  set(OSCPACK_URL https://oscpack.googlecode.com/files/oscpack_1_1_0.zip)
 elseif(OS_LINUX)
   # set(CEF_URL https://cefbuilds.s3.amazonaws.com/2357/linux32/43.0.2357.18/cef_binary_3.2357.1267.g75b5dd4_linux32.7z)
+  # set(OSCPACK_URL https://oscpack.googlecode.com/files/oscpack_1_1_0.zip)
 elseif(OS_WINDOWS)
   # set(CEF_URL https://cefbuilds.s3.amazonaws.com/2357/win/43.0.2357.18/cef_binary_3.2357.1267.g75b5dd4_windows32.7z)
+  # set(OSCPACK_URL https://oscpack.googlecode.com/files/oscpack_1_1_0.zip)
 endif()
 
 
+####
+## Cross-platform External projects
+####
 
+# Chromium Embedded Framework
 if(NOT DEFINED CEF_URL)
   message(FATAL_ERROR "No download URL specified for Chromium Embedded Framework")
 endif()
@@ -166,6 +173,22 @@ ExternalProject_Add(
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/vendor/cef
     INSTALL_COMMAND ""
 )
+
+# Oscpack
+if(NOT DEFINED OSCPACK_URL)
+  message(FATAL_ERROR "No download URL specified for Oscpack")
+endif()
+# Define Oscpack as an external project
+ExternalProject_Add(
+    oscpack
+    URL ${OSCPACK_URL}
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/vendor/oscpack
+    # CONFIGURE_COMMAND ""
+    # BUILD_COMMAND ${CMAKE_COMMAND} -E copy_directory ../syphon ./ COMMAND xcodebuild ARCHS=${CMAKE_OSX_ARCHITECTURES} ONLY_ACTIVE_ARCH=NO -configuration $<CONFIGURATION> build
+    INSTALL_COMMAND ""
+)
+
+
 
 # Determine the project architecture.
 if(NOT DEFINED PROJECT_ARCH)
@@ -198,6 +221,10 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 # Source include CEF3 directory.
 ExternalProject_Get_Property(cef SOURCE_DIR)
 include_directories(${SOURCE_DIR})
+
+# Source include Oscpack directory.
+ExternalProject_Get_Property(oscpack SOURCE_DIR)
+include_directories("${SOURCE_DIR}")
 
 # Allow C++ programs to use stdint.h macros specified in the C99 standard that
 # aren't in the C++ standard (e.g. UINT8_MAX, INT64_MIN, etc).
@@ -347,7 +374,7 @@ if(OS_MACOSX)
   set(CEF_COMPILER_FLAGS          "-fno-strict-aliasing -fstack-protector -funwind-tables -fvisibility=hidden -Wall -Wendif-labels -Werror -Wextra -Wnewline-eof -Wno-missing-field-initializers -Wno-unused-parameter")
   # -std=c99                        = Use the C99 language standard
   set(CEF_C_COMPILER_FLAGS        "-std=c99")
-  # -fno-exceptions                 = Disable exceptions
+  # -fno-exceptions                 = Disable exceptions (not used due to liboscpack using them)
   # -fno-rtti                       = Disable real-time type information
   # -fno-threadsafe-statics         = Don't generate thread-safe statics
   # -fobjc-call-cxx-cdtors          = Call the constructor/destructor of C++ instance variables in ObjC objects
@@ -355,7 +382,7 @@ if(OS_MACOSX)
   # -std=gnu++11                    = Use the C++11 language standard including GNU extensions
   # -Wno-narrowing                  = Don't warn about type narrowing
   # -Wsign-compare                  = Warn about mixed signed/unsigned type comparisons
-  set(CEF_CXX_COMPILER_FLAGS      "-fno-exceptions -fno-rtti -fno-threadsafe-statics -fobjc-call-cxx-cdtors -fvisibility-inlines-hidden -std=gnu++11 -Wno-narrowing -Wsign-compare")
+  set(CEF_CXX_COMPILER_FLAGS      "-fno-rtti -fno-threadsafe-statics -fobjc-call-cxx-cdtors -fvisibility-inlines-hidden -std=gnu++11 -Wno-narrowing -Wsign-compare")
   # -O0                             = Disable optimizations
   # -g                              = Generate debug information
   set(CEF_COMPILER_FLAGS_DEBUG    "-O0 -g")
@@ -428,6 +455,19 @@ if(OS_MACOSX)
   set(SYPHON_BINARY_DIR  "${BINARY_DIR}/build/$<CONFIGURATION>")
   set(SYPHON_LIB_DEBUG   "${BINARY_DIR}/build/Debug/Syphon.framework/Versions/A/Syphon")
   set(SYPHON_LIB_RELEASE "${BINARY_DIR}/build/Release/Syphon.framework/Versions/A/Syphon")
+
+
+
+
+  # Oscpack directory paths.
+  ExternalProject_Get_Property(oscpack BINARY_DIR)
+  set(OSCPACK_BINARY_DIR          "${BINARY_DIR}/$<CONFIGURATION>")
+  set(OSCPACK_BINARY_DIR_DEBUG    "${BINARY_DIR}/Debug")
+  set(OSCPACK_BINARY_DIR_RELEASE  "${BINARY_DIR}/Release")
+
+  # Oscpack library paths.
+  set(OSCPACK_LIB_DEBUG   "${BINARY_DIR}/Debug/liboscpack.a")
+  set(OSCPACK_LIB_RELEASE "${BINARY_DIR}/Release/liboscpack.a")
 
 endif()
 

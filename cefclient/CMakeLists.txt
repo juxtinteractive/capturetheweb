@@ -213,6 +213,10 @@ ADD_LOGICAL_TARGET("libcef_dll_wrapper" "${CEF_LIB_WRAPPER_DEBUG}" "${CEF_LIB_WR
 SET_CEF_TARGET_OUT_DIR()
 
 
+# Logical target used to link the libcef library.
+ADD_LOGICAL_TARGET("liboscpack" "${OSCPACK_LIB_DEBUG}" "${OSCPACK_LIB_RELEASE}")
+
+
 #
 # Linux configuration.
 #
@@ -275,8 +279,8 @@ if(OS_MACOSX)
 
   # Main executable target.
   add_executable(${CEF_TARGET} MACOSX_BUNDLE ${CEFCLIENT_RESOURCES_SRCS} ${CEFCLIENT_SRCS})
-  add_dependencies(${CEF_TARGET} ${CEF_HELPER_TARGET} cef syphon)
-  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper syphon_lib  ${CEF_STANDARD_LIBS} "-framework OpenGL")
+  add_dependencies(${CEF_TARGET} ${CEF_HELPER_TARGET} cef syphon oscpack)
+  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper syphon_lib liboscpack ${CEF_STANDARD_LIBS} "-framework OpenGL")
   set_target_properties(${CEF_TARGET} PROPERTIES
     RESOURCE "${CEFCLIENT_RESOURCES_SRCS}"
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/mac/Info.plist

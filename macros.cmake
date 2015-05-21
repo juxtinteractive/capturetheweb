@@ -142,7 +142,7 @@ function(SET_XCODE_TARGET_PROPERTIES target)
     XCODE_ATTRIBUTE_GCC_C_LANGUAGE_STANDARD                     "c99"       # -std=c99
     XCODE_ATTRIBUTE_GCC_CW_ASM_SYNTAX                           NO          # No -fasm-blocks
     XCODE_ATTRIBUTE_GCC_DYNAMIC_NO_PIC                          NO
-    XCODE_ATTRIBUTE_GCC_ENABLE_CPP_EXCEPTIONS                   NO          # -fno-exceptions
+    XCODE_ATTRIBUTE_GCC_ENABLE_CPP_EXCEPTIONS                   YES         # -fno-exceptions
     XCODE_ATTRIBUTE_GCC_ENABLE_CPP_RTTI                         NO          # -fno-rtti
     XCODE_ATTRIBUTE_GCC_ENABLE_PASCAL_STRINGS                   NO          # No -mpascal-strings
     XCODE_ATTRIBUTE_GCC_INLINES_ARE_PRIVATE_EXTERN              YES         # -fvisibility-inlines-hidden
