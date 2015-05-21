@@ -19,6 +19,18 @@
 #include "cefclient/resource_util.h"
 #include "cefclient/test_runner.h"
 
+// Start includes for OSC
+#include <pthread.h>
+#include <iostream>
+#include <cstring>
+#include <cstdlib>
+#include "osc/OscReceivedElements.h"
+#include "osc/OscPrintReceivedElements.h"
+#include "osc/OscPacketListener.h"
+#include "ip/UdpSocket.h"
+// End includes for OSC
+
+
 namespace {
 
 // The global ClientHandler reference.
@@ -495,6 +507,72 @@ void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
 
 namespace client {
 namespace {
+  
+class OscDumpPacketListener : public osc::OscPacketListener{
+protected:
+  virtual void ProcessMessage(const osc::ReceivedMessage& m, const IpEndpointName& remoteEndpoint) {
+    (void) remoteEndpoint; // suppress unused parameter warning
+    
+    try {
+      osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
+      
+      if(arg->IsString()) {
+
+        const char *msgUrl = arg->AsString();
+        
+        std::cout << "we're going to " << msgUrl << std::endl;
+        
+        if (!g_handler.get() || !g_handler->GetBrowserId())
+          return;
+        
+        NSString *url = [NSString stringWithUTF8String:msgUrl];
+        
+        // if it doesn't already have a prefix, add http. If we can't parse it,
+        // just don't bother rather than making things worse.
+        NSURL* tempUrl = [NSURL URLWithString:url];
+        if (tempUrl && ![tempUrl scheme])
+          url = [@"http://" stringByAppendingString:url];
+        
+        std::string urlStr = [url UTF8String];
+        g_handler->GetBrowser()->GetMainFrame()->LoadURL(urlStr);
+
+      } else if(arg->IsFloat()) {
+
+        float xPos = arg->AsFloat();
+        
+        if (!g_handler.get() || !g_handler->GetBrowserId())
+          return;
+        
+        NSSize winSize = g_handler->GetBrowser()->GetHost()->GetWindowHandle().frame.size;
+        
+        CefMouseEvent mouseEvent;
+        mouseEvent.x = (int)(xPos*winSize.width);
+        mouseEvent.y = (int)(xPos*winSize.height);
+        
+        g_handler->GetBrowser()->GetHost()->SendMouseMoveEvent(mouseEvent, false);
+
+      }
+      
+    } catch (osc::Exception& e) {
+      std::cout << "Not a string message: " << m.AddressPattern() << ":" << e.what() << std::endl;
+    }
+  }
+};
+  
+void *startOscListener(void *threadId) {
+  int port = 7000;
+
+  OscDumpPacketListener listener;
+  UdpListeningReceiveSocket s(
+                              IpEndpointName( IpEndpointName::ANY_ADDRESS, port ),
+                              &listener );
+
+  s.RunUntilSigInt();
+  
+  pthread_exit(NULL);
+}
+
+
 
 int RunMain(int argc, char* argv[]) {
   CefMainArgs main_args(argc, argv);
@@ -528,6 +606,15 @@ int RunMain(int argc, char* argv[]) {
   [delegate performSelectorOnMainThread:@selector(createApplication:)
                              withObject:nil
                           waitUntilDone:NO];
+  
+  
+  
+  
+  pthread_t threads[1];
+  pthread_create(&threads[0], NULL, startOscListener, 0);
+
+  
+  
 
   // Run the message loop. This will block until Quit() is called.
   int result = message_loop->Run();
