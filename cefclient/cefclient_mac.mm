@@ -24,10 +24,10 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
-#include "osc/OscReceivedElements.h"
-#include "osc/OscPrintReceivedElements.h"
-#include "osc/OscPacketListener.h"
-#include "ip/UdpSocket.h"
+#include <osc/OscReceivedElements.h>
+#include <osc/OscPrintReceivedElements.h>
+#include <osc/OscPacketListener.h>
+#include <ip/UdpSocket.h>
 // End includes for OSC
 
 
