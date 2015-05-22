@@ -31,6 +31,12 @@
 // End includes for OSC
 
 
+// These headers are needed in order build tasks that can be passed to threads
+// see resizeIt(int size)
+#include "include/base/cef_bind.h"
+#include "include/wrapper/cef_closure_task.h"
+
+
 namespace {
 
 // The global ClientHandler reference.
@@ -517,6 +523,60 @@ void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
 
 namespace client {
 namespace {
+
+  
+void gotoURL(const char *msgUrl) {
+
+  if (!g_handler.get() || !g_handler->GetBrowserId())
+    return;
+  
+  NSString *url = [NSString stringWithUTF8String:msgUrl];
+  
+  // if it doesn't already have a prefix, add http. If we can't parse it,
+  // just don't bother rather than making things worse.
+  NSURL* tempUrl = [NSURL URLWithString:url];
+  if (tempUrl && ![tempUrl scheme])
+    url = [@"http://" stringByAppendingString:url];
+  
+  std::string urlStr = [url UTF8String];
+  g_handler->GetBrowser()->GetMainFrame()->LoadURL(urlStr);
+  
+}
+  
+void moveMouse(float val) {
+  if (!g_handler.get() || !g_handler->GetBrowserId())
+    return;
+  
+  NSSize winSize = g_handler->GetBrowser()->GetHost()->GetWindowHandle().frame.size;
+  
+  CefMouseEvent mouseEvent;
+  mouseEvent.x = (int)(val * winSize.width);
+  mouseEvent.y = (int)(val * winSize.height);
+  
+  g_handler->GetBrowser()->GetHost()->SendMouseMoveEvent(mouseEvent, false);
+  
+}
+  
+void resizeIt(int size) {
+  // We are not allowed to access the main window handle unless we're on the CEF UI thread
+  if (!CefCurrentlyOn(TID_UI)) {
+    // Execute on the UI thread.
+    CefPostTask(TID_UI, base::Bind(&resizeIt, size));
+    return;
+  }
+  
+  if (!g_handler.get() || !g_handler->GetBrowserId())
+    return;
+  
+  NSWindow *window = g_handler->GetMainWindowHandle().window;
+  
+  NSRect newFrame = window.frame;
+  newFrame.size.width = size > 0 ? size : 1;
+  newFrame.size.height = newFrame.size.width;
+  
+  [window setFrame:newFrame display:YES];
+  
+}
   
 class OscDumpPacketListener : public osc::OscPacketListener{
 protected:
@@ -527,47 +587,28 @@ protected:
       osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
       
       if(arg->IsString()) {
-
+        
         const char *msgUrl = arg->AsString();
+        gotoURL(msgUrl);
+
+      } else if(arg->IsInt32()) {
         
-        std::cout << "we're going to " << msgUrl << std::endl;
-        
-        if (!g_handler.get() || !g_handler->GetBrowserId())
-          return;
-        
-        NSString *url = [NSString stringWithUTF8String:msgUrl];
-        
-        // if it doesn't already have a prefix, add http. If we can't parse it,
-        // just don't bother rather than making things worse.
-        NSURL* tempUrl = [NSURL URLWithString:url];
-        if (tempUrl && ![tempUrl scheme])
-          url = [@"http://" stringByAppendingString:url];
-        
-        std::string urlStr = [url UTF8String];
-        g_handler->GetBrowser()->GetMainFrame()->LoadURL(urlStr);
+        int size = arg->AsInt32();
+        resizeIt(size);
 
       } else if(arg->IsFloat()) {
-
-        float xPos = arg->AsFloat();
         
-        if (!g_handler.get() || !g_handler->GetBrowserId())
-          return;
-        
-        NSSize winSize = g_handler->GetBrowser()->GetHost()->GetWindowHandle().frame.size;
-        
-        CefMouseEvent mouseEvent;
-        mouseEvent.x = (int)(xPos*winSize.width);
-        mouseEvent.y = (int)(xPos*winSize.height);
-        
-        g_handler->GetBrowser()->GetHost()->SendMouseMoveEvent(mouseEvent, false);
-
+        float val = arg->AsFloat();
+        moveMouse(val);
+      
       }
       
     } catch (osc::Exception& e) {
-      std::cout << "Not a string message: " << m.AddressPattern() << ":" << e.what() << std::endl;
+      std::cout << "Error processing OSC message: " << m.AddressPattern() << ":" << e.what() << std::endl;
     }
   }
 };
+
   
 void *startOscListener(void *threadId) {
   int port = 7000;
