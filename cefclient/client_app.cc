@@ -7,6 +7,7 @@
 #include "client_app.h"  // NOLINT(build/include)
 
 #include <string>
+#include <sstream>
 
 #include "include/cef_cookie.h"
 #include "include/cef_process_message.h"
@@ -107,6 +108,58 @@ bool ClientApp::OnBeforeNavigation(CefRefPtr<CefBrowser> browser,
 
   return false;
 }
+  
+  
+class MyV8Handler : public CefV8Handler {
+public:
+  MyV8Handler() {}
+  
+  virtual bool Execute(const CefString& name,
+                       CefRefPtr<CefV8Value> object,
+                       const CefV8ValueList& arguments,
+                       CefRefPtr<CefV8Value>& retval,
+                       CefString& exception) OVERRIDE {
+    if (name == "shout") {
+
+      if(arguments.size() == 1 && arguments[0]->IsString()) {
+        std::stringstream stream;
+
+        stream << "Hey everyone! " << arguments[0]->GetStringValue().ToString() << "!" << std::endl;
+
+        std::string line;
+        
+        std::getline(stream, line);
+        
+        retval = CefV8Value::CreateString(line.c_str());
+      }
+
+      // Return my string value.
+      return true;
+    }
+    
+    // Function does not exist.
+    return false;
+  }
+  
+  // Provide the reference counting implementation for this class.
+  IMPLEMENT_REFCOUNTING(MyV8Handler);
+};
+  
+void setupMyCustomJSAPI(CefRefPtr<CefV8Context> &context) {
+  CefRefPtr<CefV8Value> global = context->GetGlobal();
+  
+  CefRefPtr<CefV8Value> myObject = global->CreateObject(NULL);
+  
+  CefRefPtr<CefV8Handler> handler = new MyV8Handler();
+  
+  CefRefPtr<CefV8Value> myFunction = CefV8Value::CreateFunction("shout", handler);
+  
+  myObject->SetValue("answerToEverything", CefV8Value::CreateInt(42), V8_PROPERTY_ATTRIBUTE_NONE);
+  myObject->SetValue("existentialQuote", CefV8Value::CreateString("To be, or not to be. That is the question."), V8_PROPERTY_ATTRIBUTE_NONE);
+  myObject->SetValue("shout", myFunction, V8_PROPERTY_ATTRIBUTE_NONE);
+  
+  global->SetValue("myObject", myObject, V8_PROPERTY_ATTRIBUTE_NONE);
+}
 
 void ClientApp::OnContextCreated(CefRefPtr<CefBrowser> browser,
                                  CefRefPtr<CefFrame> frame,
@@ -114,6 +167,8 @@ void ClientApp::OnContextCreated(CefRefPtr<CefBrowser> browser,
   RenderDelegateSet::iterator it = render_delegates_.begin();
   for (; it != render_delegates_.end(); ++it)
     (*it)->OnContextCreated(this, browser, frame, context);
+  
+  setupMyCustomJSAPI(context);
 }
 
 void ClientApp::OnContextReleased(CefRefPtr<CefBrowser> browser,
