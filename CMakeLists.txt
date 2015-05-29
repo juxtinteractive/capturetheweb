@@ -147,7 +147,7 @@ endif()
 # Determine the platform.
 if(OS_MACOSX)
   set(CEF_URL https://cefbuilds.s3.amazonaws.com/2272/mac64/41.0.2272.76/cef_binary_3.2272.2077_macosx64.7z)
-  set(SYPHON_URL https://github.com/Syphon/Syphon-Framework/archive/c66e51c2e6f6a54184284617f8d5fd44c48ed3c9.zip)
+  set(SYPHON_URL https://github.com/Syphon/Syphon-Framework/archive/50f1ec7b808fa6d4bcafcf6b7f4e022804e20287.zip)
   set(OSCPACK_URL https://oscpack.googlecode.com/files/oscpack_1_1_0.zip)
 elseif(OS_LINUX)
   # set(CEF_URL https://cefbuilds.s3.amazonaws.com/2357/linux32/43.0.2357.18/cef_binary_3.2357.1267.g75b5dd4_linux32.7z)
