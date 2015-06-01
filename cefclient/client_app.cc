@@ -119,21 +119,33 @@ public:
                        const CefV8ValueList& arguments,
                        CefRefPtr<CefV8Value>& retval,
                        CefString& exception) OVERRIDE {
-    if (name == "shout") {
+    if (name == "send") {
 
       if(arguments.size() == 1 && arguments[0]->IsString()) {
-        std::stringstream stream;
-
-        stream << "Hey everyone! " << arguments[0]->GetStringValue().ToString() << "!" << std::endl;
-
-        std::string line;
         
-        std::getline(stream, line);
+        std::string message = arguments[0]->GetStringValue().ToString();
+  
+        CefRefPtr<CefV8Context> context = CefV8Context::GetCurrentContext();
         
-        retval = CefV8Value::CreateString(line.c_str());
+        
+        // Create the message object.
+        CefRefPtr<CefProcessMessage> msg = CefProcessMessage::Create("my_message");
+        
+        // Retrieve the argument list object.
+        CefRefPtr<CefListValue> args = msg->GetArgumentList();
+        
+        // Populate the argument values.
+        args->SetString(0, message);
+        
+        // Send the process message to the render process.
+        // Use PID_BROWSER instead when sending a message to the browser process.
+        context->GetBrowser()->SendProcessMessage(PID_BROWSER, msg);
+
+        
+        // Return value in JavaScript
+        retval = CefV8Value::CreateString(message.c_str());
       }
 
-      // Return my string value.
       return true;
     }
     
@@ -146,19 +158,19 @@ public:
 };
   
 void setupMyCustomJSAPI(CefRefPtr<CefV8Context> &context) {
-  CefRefPtr<CefV8Value> global = context->GetGlobal();
-  
-  CefRefPtr<CefV8Value> myObject = global->CreateObject(NULL);
-  
+
+  // Set up handler for att functions
   CefRefPtr<CefV8Handler> handler = new MyV8Handler();
   
-  CefRefPtr<CefV8Value> myFunction = CefV8Value::CreateFunction("shout", handler);
+  // Create V8 object for OSC API
+  CefRefPtr<CefV8Value> containerObject = CefV8Value::CreateObject(NULL);
+
+  // Attach to global V8 object
+  context->GetGlobal()->SetValue("JuxtOSC", containerObject, V8_PROPERTY_ATTRIBUTE_NONE);
   
-  myObject->SetValue("answerToEverything", CefV8Value::CreateInt(42), V8_PROPERTY_ATTRIBUTE_NONE);
-  myObject->SetValue("existentialQuote", CefV8Value::CreateString("To be, or not to be. That is the question."), V8_PROPERTY_ATTRIBUTE_NONE);
-  myObject->SetValue("shout", myFunction, V8_PROPERTY_ATTRIBUTE_NONE);
-  
-  global->SetValue("myObject", myObject, V8_PROPERTY_ATTRIBUTE_NONE);
+  // Set up send message function
+  CefRefPtr<CefV8Value> oscSendMessage = CefV8Value::CreateFunction("send", handler);
+  containerObject->SetValue("send", oscSendMessage, V8_PROPERTY_ATTRIBUTE_NONE);
 }
 
 void ClientApp::OnContextCreated(CefRefPtr<CefBrowser> browser,

@@ -31,6 +31,16 @@
 #include "cefclient/dialog_handler_gtk.h"
 #endif
 
+// OSC Stuff
+#include <osc/OscOutboundPacketStream.h>
+#include <ip/UdpSocket.h>
+
+#define OSC_OUTPUT_ADDRESS "127.0.0.1"
+#define OSC_OUTPUT_PORT 3000
+
+#define OSC_OUTPUT_BUFFER_SIZE 1024
+// end OSC stuff
+
 namespace client {
 
 #if defined(OS_WIN)
@@ -226,7 +236,22 @@ bool ClientHandler::OnProcessMessageReceived(
     focus_on_editable_field_ = message->GetArgumentList()->GetBool(0);
     return true;
   }
+  
+  if(message_name == "my_message") {
+    CefRefPtr<CefListValue> args = message->GetArgumentList();
+    
+    UdpTransmitSocket transmitSocket( IpEndpointName( OSC_OUTPUT_ADDRESS, OSC_OUTPUT_PORT ) );
+    
+    char buffer[OSC_OUTPUT_BUFFER_SIZE];
+    osc::OutboundPacketStream p( buffer, OSC_OUTPUT_BUFFER_SIZE );
+    
+    p << osc::BeginMessage( "/frombrowser" ) << args->GetString(0).ToString().c_str() << osc::EndMessage;
+    
+    transmitSocket.Send( p.Data(), p.Size() );
 
+    return true;
+  }
+  
   return false;
 }
 
