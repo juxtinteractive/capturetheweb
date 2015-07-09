@@ -52,12 +52,14 @@ class MainBrowserProvider : public client::OSRBrowserProvider {
   }
 } g_main_browser_provider;
 
-
 // Sizes for URL bar layout
 #define BUTTON_HEIGHT 22
 #define BUTTON_WIDTH 72
 #define BUTTON_MARGIN 8
 #define URLBAR_HEIGHT  32
+  
+#define WIDTH_FIELD_TAG 100
+#define HEIGHT_FIELD_TAG 101
 
 // Content area size for newly created windows.
 const int kWindowWidth = 800;
@@ -170,7 +172,10 @@ void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
 - (IBAction)stopLoading:(id)sender;
 - (IBAction)goToBacon:(id)sender;
 - (IBAction)takeURLStringValueFrom:(NSTextField *)sender;
+- (IBAction)setWidth:(NSTextField *)sender;
+- (IBAction)setHeight:(NSTextField *)sender;
 - (void)alert:(NSString*)title withMessage:(NSString*)message;
+- (void)windowDidResize:(NSNotification *)notification;
 @end
 
 @implementation ClientWindowDelegate
@@ -199,6 +204,18 @@ void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
   [super dealloc];
+}
+
+- (void)windowDidResize:(NSNotification *)notification {
+  NSWindow *window = g_handler->GetMainWindowHandle().window;
+  NSView *contentView = [window contentView];
+  NSRect newFrame = contentView.frame;
+  NSTextField *widthText = [contentView viewWithTag:WIDTH_FIELD_TAG];
+  NSTextField *heightText = [contentView viewWithTag:HEIGHT_FIELD_TAG];
+  [widthText setStringValue: [@(newFrame.size.width) stringValue]];
+  [heightText setStringValue: [@(newFrame.size.height - URLBAR_HEIGHT) stringValue]];
+  
+
 }
 
 - (IBAction)goBack:(id)sender {
@@ -240,6 +257,60 @@ void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
 
   std::string urlStr = [url UTF8String];
   g_handler->GetBrowser()->GetMainFrame()->LoadURL(urlStr);
+}
+
+- (IBAction)setWidth:(NSTextField *)sender {
+  if (!g_handler.get() || !g_handler->GetBrowserId())
+    return;
+
+  // We are not allowed to access the main window handle unless we're on the CEF UI thread
+//  if (!CefCurrentlyOn(TID_UI)) {
+//    // Execute on the UI thread.
+//    CefPostTask(TID_UI, base::Bind(&resizeIt, width, height));
+//    return;
+//  }
+
+  NSString *widthStr = [sender stringValue];
+  
+  NSWindow *window = g_handler->GetMainWindowHandle().window;
+  NSRect windowFrame = window.frame;
+
+
+  int width = widthStr.intValue;
+  int height = windowFrame.size.height;
+  NSRect newFrame = window.frame;
+  newFrame.size.width = width > 0 ? width : 1;
+  newFrame.size.height = height > 0 ? height : 1;
+  
+  [window setFrame:newFrame display:YES];
+}
+
+- (IBAction)setHeight:(NSTextField *)sender {
+  if (!g_handler.get() || !g_handler->GetBrowserId())
+    return;
+  
+  // We are not allowed to access the main window handle unless we're on the CEF UI thread
+  //  if (!CefCurrentlyOn(TID_UI)) {
+  //    // Execute on the UI thread.
+  //    CefPostTask(TID_UI, base::Bind(&resizeIt, width, height));
+  //    return;
+  //  }
+  
+  NSString *heightStr = [sender stringValue];
+  
+  NSWindow *window = g_handler->GetMainWindowHandle().window;
+  NSRect windowFrame = window.frame;
+  NSView *contentView = [window contentView];
+  NSRect contentFrame = contentView.frame;
+  
+  
+  int width = windowFrame.size.width;
+  int height = heightStr.intValue + (windowFrame.size.height - contentFrame.size.height) + URLBAR_HEIGHT;
+  NSRect newFrame = window.frame;
+  newFrame.size.width = width > 0 ? width : 1;
+  newFrame.size.height = height > 0 ? height : 1;
+  
+  [window setFrame:newFrame display:YES];
 }
 
 - (void)alert:(NSString*)title withMessage:(NSString*)message {
@@ -446,6 +517,26 @@ void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
   [button setTarget:delegate];
   [button setAction:@selector(goToBacon:)];
 
+  NSTextField* widthTxt = [[NSTextField alloc] initWithFrame:button_rect];
+  [contentView addSubview:widthTxt];
+  [widthTxt setAutoresizingMask:(NSViewMinYMargin)];
+  [widthTxt setTarget:delegate];
+  [widthTxt setAction:@selector(setWidth:)];
+  [[widthTxt cell] setWraps:NO];
+  [[widthTxt cell] setScrollable:YES];
+  button_rect.origin.x += BUTTON_WIDTH;
+  [widthTxt setTag: WIDTH_FIELD_TAG];
+  
+  NSTextField* heightTxt = [[NSTextField alloc] initWithFrame:button_rect];
+  [contentView addSubview:heightTxt];
+  [heightTxt setAutoresizingMask:(NSViewMinYMargin)];
+  [heightTxt setTarget:delegate];
+  [heightTxt setAction:@selector(setHeight:)];
+  [[heightTxt cell] setWraps:NO];
+  [[heightTxt cell] setScrollable:YES];
+  [heightTxt setTag: HEIGHT_FIELD_TAG];
+  button_rect.origin.x += BUTTON_WIDTH;
+  
   // Create the URL text field.
   button_rect.origin.x += BUTTON_MARGIN;
   button_rect.size.width = [contentView bounds].size.width -
@@ -522,8 +613,29 @@ void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
 
 
 namespace client {
+  
 namespace {
 
+void resizeIt(int width, int height) {
+  // We are not allowed to access the main window handle unless we're on the CEF UI thread
+  if (!CefCurrentlyOn(TID_UI)) {
+    // Execute on the UI thread.
+    CefPostTask(TID_UI, base::Bind(&resizeIt, width, height));
+    return;
+  }
+  
+  if (!g_handler.get() || !g_handler->GetBrowserId())
+    return;
+  
+  NSWindow *window = g_handler->GetMainWindowHandle().window;
+  
+  NSRect newFrame = window.frame;
+  newFrame.size.width = width > 0 ? width : 1;
+  newFrame.size.height = height > 0 ? height : 1;
+  
+  [window setFrame:newFrame display:YES];
+  
+}
   
 void gotoURL(const char *msgUrl) {
 
@@ -557,26 +669,7 @@ void moveMouse(float val) {
   
 }
   
-void resizeIt(int size) {
-  // We are not allowed to access the main window handle unless we're on the CEF UI thread
-  if (!CefCurrentlyOn(TID_UI)) {
-    // Execute on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&resizeIt, size));
-    return;
-  }
-  
-  if (!g_handler.get() || !g_handler->GetBrowserId())
-    return;
-  
-  NSWindow *window = g_handler->GetMainWindowHandle().window;
-  
-  NSRect newFrame = window.frame;
-  newFrame.size.width = size > 0 ? size : 1;
-  newFrame.size.height = newFrame.size.width;
-  
-  [window setFrame:newFrame display:YES];
-  
-}
+
   
 class OscDumpPacketListener : public osc::OscPacketListener{
 protected:
@@ -594,7 +687,7 @@ protected:
       } else if(arg->IsInt32()) {
         
         int size = arg->AsInt32();
-        resizeIt(size);
+        resizeIt(size, size);
 
       } else if(arg->IsFloat()) {
         
