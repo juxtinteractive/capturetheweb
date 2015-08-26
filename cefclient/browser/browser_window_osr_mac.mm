@@ -15,6 +15,8 @@
 #include "cefclient/browser/geometry_util.h"
 #include "cefclient/browser/main_message_loop.h"
 
+#import <Syphon.h>
+
 // Forward declare methods and constants that are only available with newer SDK
 // versions to avoid -Wpartial-availability compiler warnings.
 
@@ -115,6 +117,8 @@ extern NSString* const NSWindowDidChangeBackingPropertiesNotification;
 
 
 namespace {
+
+  SyphonServer *syServer;
 
 // This method will return YES for OS X versions 10.7.3 and later, and NO
 // otherwise.
@@ -1420,19 +1424,41 @@ void BrowserWindowOsrMac::OnPaint(
     return;
   }
 
+  // Syphon
+  unsigned int texId;
+
   if (painting_popup_) {
-    renderer_.OnPaint(browser, type, dirtyRects, buffer, width, height);
+    texId = renderer_.OnPaint(browser, type, dirtyRects, buffer, width, height);
     return;
   }
 
   ScopedGLContext scoped_gl_context(GLView(nsview_), true);
 
-  renderer_.OnPaint(browser, type, dirtyRects, buffer, width, height);
+
+  texId = renderer_.OnPaint(browser, type, dirtyRects, buffer, width, height);
   if (type == PET_VIEW && !renderer_.popup_rect().IsEmpty()) {
     painting_popup_ = true;
     browser->GetHost()->Invalidate(PET_POPUP);
     painting_popup_ = false;
   }
+
+  //syph start - publish syphon frame
+  // We only publish our frame if we have clients
+  if ([syServer hasClients])
+  {
+      NSRect rect = NSMakeRect(0, 0, renderer_.GetViewWidth(), renderer_.GetViewHeight());
+
+      // publish our frame to our server. We use the whole texture, but we could just publish a region of it
+      CGLLockContext(syServer.context);
+      [syServer publishFrameTexture:texId
+                      textureTarget:GL_TEXTURE_2D //was GL_TEXTURE_RECTANGLE_EXT
+                        imageRegion:rect
+                  textureDimensions:rect.size
+                            flipped:YES];
+      CGLUnlockContext(syServer.context);
+  }
+  //syph end
+
   renderer_.Render();
 }
 
@@ -1514,6 +1540,12 @@ void BrowserWindowOsrMac::Create(ClientWindowHandle parent_handle,
              name:NSWindowDidChangeBackingPropertiesNotification
            object:[nsview_ window]];
   }
+
+  //syph start - Create a Syphon server
+  NSOpenGLContext* NScontext = [GLView(nsview_) openGLContext];
+  CGLContextObj cglContext = (CGLContextObj) NScontext.CGLContextObj;
+  syServer = [[SyphonServer alloc] initWithName:@"My Output" context:cglContext options:nil];
+  //syph end
 }
 
 }  // namespace client

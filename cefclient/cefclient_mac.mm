@@ -13,6 +13,24 @@
 #include "cefclient/browser/root_window.h"
 #include "cefclient/browser/test_runner.h"
 
+// Start includes for OSC
+#include <pthread.h>
+#include <iostream>
+#include <cstring>
+#include <cstdlib>
+#include <osc/OscReceivedElements.h>
+#include <osc/OscPrintReceivedElements.h>
+#include <osc/OscPacketListener.h>
+#include <ip/UdpSocket.h>
+// End includes for OSC
+
+
+// These headers are needed in order build tasks that can be passed to threads
+// see resizeIt(int size)
+#include "include/base/cef_bind.h"
+#include "include/wrapper/cef_closure_task.h"
+
+
 namespace {
 
 void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
@@ -222,8 +240,8 @@ int RunMain(int argc, char* argv[]) {
   test_runner::RegisterSchemeHandlers();
 
   // Create the application delegate and window.
-  ClientAppDelegate* delegate = [[ClientAppDelegate alloc]
-      initWithOsr:settings.windowless_rendering_enabled ? true : false];
+  ClientAppDelegate* delegate = [[ClientAppDelegate alloc] initWithOsr:true];
+      // initWithOsr:settings.windowless_rendering_enabled ? true : false];
   [delegate performSelectorOnMainThread:@selector(createApplication:)
                              withObject:nil
                           waitUntilDone:NO];
