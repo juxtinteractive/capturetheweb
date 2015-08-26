@@ -146,7 +146,7 @@ endif()
 
 # Determine the platform.
 if(OS_MACOSX)
-  set(CEF_URL https://cefbuilds.s3.amazonaws.com/2272/mac64/41.0.2272.76/cef_binary_3.2272.2077_macosx64.7z)
+  set(CEF_URL https://cefbuilds.s3.amazonaws.com/2454/mac64/45.0.2454.26/cef_binary_3.2454.1316.g29bd7d2_macosx64.7z)
   set(SYPHON_URL https://github.com/Syphon/Syphon-Framework/archive/50f1ec7b808fa6d4bcafcf6b7f4e022804e20287.zip)
   set(OSCPACK_URL https://oscpack.googlecode.com/files/oscpack_1_1_0.zip)
 elseif(OS_LINUX)
@@ -468,8 +468,8 @@ if(OS_MACOSX)
 
 
   # Oscpack library paths.
-  set(OSCPACK_LIB_DEBUG   "${BINARY_DIR}/Debug/liboscpack.a")
-  set(OSCPACK_LIB_RELEASE "${BINARY_DIR}/Release/liboscpack.a")
+  set(OSCPACK_LIB_DEBUG   "${OSCPACK_BINARY_DIR_DEBUG}/liboscpack.a")
+  set(OSCPACK_LIB_RELEASE "${OSCPACK_BINARY_DIR_RELEASE}/liboscpack.a")
 
 endif()
 

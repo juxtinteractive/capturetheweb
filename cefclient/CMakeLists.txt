@@ -260,6 +260,7 @@ endif()
 
 # Logical target used to link the libcef library.
 ADD_LOGICAL_TARGET("libcef_lib" "${CEF_LIB_DEBUG}" "${CEF_LIB_RELEASE}")
+ADD_LOGICAL_TARGET("libcef_dll_wrapper" "${CEF_LIB_WRAPPER_DEBUG}" "${CEF_LIB_WRAPPER_RELEASE}")
 
 # Determine the target output directory.
 SET_CEF_TARGET_OUT_DIR()
@@ -375,6 +376,10 @@ if(OS_MACOSX)
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CEF_BINARY_DIR}/Chromium Embedded Framework.framework"
             "${CEF_APP}/Contents/Frameworks/Chromium Embedded Framework.framework"
+    # Copy the Syphon framework into the Frameworks directory.
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${SYPHON_BINARY_DIR}/Syphon.framework"
+            "${CEF_APP}/Contents/Frameworks/Syphon.framework"
     VERBATIM
     )
 
@@ -412,7 +417,6 @@ if(OS_WINDOWS)
   add_executable(${CEF_TARGET} WIN32 ${CEFCLIENT_SRCS})
   add_dependencies(${CEF_TARGET} cef oscpack)
 
-  ADD_LOGICAL_TARGET("libcef_dll_wrapper" "${CEF_LIB_WRAPPER_DEBUG}" "${CEF_LIB_WRAPPER_RELEASE}")
   target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper liboscpack ${CEF_STANDARD_LIBS} "glu32.lib" "opengl32.lib")
 
   if(USE_SANDBOX)
