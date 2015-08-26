@@ -154,7 +154,8 @@ elseif(OS_LINUX)
   # set(OSCPACK_URL https://oscpack.googlecode.com/files/oscpack_1_1_0.zip)
 elseif(OS_WINDOWS)
   # set(CEF_URL https://cefbuilds.s3.amazonaws.com/2357/win/43.0.2357.18/cef_binary_3.2357.1267.g75b5dd4_windows32.7z)
-  # set(OSCPACK_URL https://oscpack.googlecode.com/files/oscpack_1_1_0.zip)
+  set(CEF_URL https://cefbuilds.s3.amazonaws.com/2454/win64/45.0.2454.26/cef_binary_3.2454.1316.g29bd7d2_windows64.7z)
+  set(OSCPACK_URL https://oscpack.googlecode.com/files/oscpack_1_1_0.zip)
 endif()
 
 
