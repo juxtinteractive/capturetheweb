@@ -128,7 +128,7 @@ include(ExternalProject)
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
 # Project name.
-project(cef-cmake-externalproject-sample)
+project(capturetheweb)
 
 # Use folders in the resulting project files.
 set_property(GLOBAL PROPERTY OS_FOLDERS ON)
