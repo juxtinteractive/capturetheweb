@@ -203,6 +203,127 @@ void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
 namespace client {
 namespace {
 
+CefRefPtr<CefBrowser> getBrowser() {
+  // Retrieve the active RootWindow.
+  NSWindow* key_window = [[ClientApplication sharedApplication] keyWindow];
+  if (!key_window) {
+    std::cout << "football" << std::endl;
+    return NULL;
+  }
+
+  scoped_refptr<client::RootWindow> root_window =
+      client::RootWindow::GetForNSWindow(key_window);
+
+  CefRefPtr<CefBrowser> browser = root_window->GetBrowser();
+
+  return browser;
+}
+
+void resizeIt(int width, int height) {
+  // We are not allowed to access the main window handle unless we're on the CEF UI thread
+  if (!CefCurrentlyOn(TID_UI)) {
+    // Execute on the UI thread.
+    CefPostTask(TID_UI, base::Bind(&resizeIt, width, height));
+    return;
+  }
+
+  CefRefPtr<CefBrowser> browser = getBrowser();
+  if(!browser.get())
+    return;
+
+  NSWindow *window = browser->GetHost()->GetWindowHandle().window;
+
+  NSRect newFrame = window.frame;
+  newFrame.size.width = width > 0 ? width : 1;
+  newFrame.size.height = height > 0 ? height : 1;
+
+  [window setFrame:newFrame display:YES];
+
+}
+
+void gotoURL(const char *msgUrl) {
+
+  CefRefPtr<CefBrowser> browser = getBrowser();
+  if(!browser.get())
+    return;
+
+  NSString *url = [NSString stringWithUTF8String:msgUrl];
+
+  // if it doesn't already have a prefix, add http. If we can't parse it,
+  // just don't bother rather than making things worse.
+  NSURL* tempUrl = [NSURL URLWithString:url];
+  if (tempUrl && ![tempUrl scheme])
+    url = [@"http://" stringByAppendingString:url];
+
+  std::string urlStr = [url UTF8String];
+  browser->GetMainFrame()->LoadURL(urlStr);
+
+}
+
+void moveMouse(float val) {
+  CefRefPtr<CefBrowser> browser = getBrowser();
+  std::cout << "check" << std::endl;
+  if(!browser.get())
+    return;
+  std::cout << "were in" << std::endl;
+
+  NSSize winSize = browser->GetHost()->GetWindowHandle().frame.size;
+
+  CefMouseEvent mouseEvent;
+  mouseEvent.x = (int)(val * winSize.width);
+  mouseEvent.y = (int)(val * winSize.height);
+
+  browser->GetHost()->SendMouseMoveEvent(mouseEvent, false);
+
+}
+
+
+class OscDumpPacketListener : public osc::OscPacketListener{
+protected:
+  virtual void ProcessMessage(const osc::ReceivedMessage& m, const IpEndpointName& remoteEndpoint) {
+    (void) remoteEndpoint; // suppress unused parameter warning
+
+
+    try {
+      osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
+
+      if(arg->IsString()) {
+
+        const char *msgUrl = arg->AsString();
+        gotoURL(msgUrl);
+
+      } else if(arg->IsInt32()) {
+
+        int size = arg->AsInt32();
+        resizeIt(size, size);
+
+      } else if(arg->IsFloat()) {
+
+        float val = arg->AsFloat();
+        moveMouse(val);
+
+      }
+
+    } catch (osc::Exception& e) {
+      std::cout << "Error processing OSC message: " << m.AddressPattern() << ":" << e.what() << std::endl;
+    }
+  }
+};
+
+
+void *startOscListener(void *threadId) {
+  int port = 7000;
+
+  OscDumpPacketListener listener;
+  UdpListeningReceiveSocket s(
+                              IpEndpointName( IpEndpointName::ANY_ADDRESS, port ),
+                              &listener );
+
+  s.RunUntilSigInt();
+
+  pthread_exit(NULL);
+}
+
 int RunMain(int argc, char* argv[]) {
   CefMainArgs main_args(argc, argv);
 
@@ -245,6 +366,19 @@ int RunMain(int argc, char* argv[]) {
   [delegate performSelectorOnMainThread:@selector(createApplication:)
                              withObject:nil
                           waitUntilDone:NO];
+
+
+
+
+
+
+  pthread_t threads[1];
+  pthread_create(&threads[0], NULL, startOscListener, 0);
+
+
+
+
+
 
   // Run the message loop. This will block until Quit() is called.
   int result = message_loop->Run();

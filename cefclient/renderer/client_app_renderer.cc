@@ -63,12 +63,80 @@ bool ClientAppRenderer::OnBeforeNavigation(CefRefPtr<CefBrowser> browser,
   return false;
 }
 
+
+
+class MyV8Handler : public CefV8Handler {
+public:
+  MyV8Handler() {}
+
+  virtual bool Execute(const CefString& name,
+                       CefRefPtr<CefV8Value> object,
+                       const CefV8ValueList& arguments,
+                       CefRefPtr<CefV8Value>& retval,
+                       CefString& exception) OVERRIDE {
+    if (name == "send") {
+
+      if(arguments.size() == 1 && arguments[0]->IsString()) {
+
+        std::string message = arguments[0]->GetStringValue().ToString();
+
+        CefRefPtr<CefV8Context> context = CefV8Context::GetCurrentContext();
+
+
+        // Create the message object.
+        CefRefPtr<CefProcessMessage> msg = CefProcessMessage::Create("my_message");
+
+        // Retrieve the argument list object.
+        CefRefPtr<CefListValue> args = msg->GetArgumentList();
+
+        // Populate the argument values.
+        args->SetString(0, message);
+
+        // Send the process message to the render process.
+        // Use PID_BROWSER instead when sending a message to the browser process.
+        context->GetBrowser()->SendProcessMessage(PID_BROWSER, msg);
+
+
+        // Return value in JavaScript
+        retval = CefV8Value::CreateString(message.c_str());
+      }
+
+      return true;
+    }
+
+    // Function does not exist.
+    return false;
+  }
+
+  // Provide the reference counting implementation for this class.
+  IMPLEMENT_REFCOUNTING(MyV8Handler);
+};
+
+void setupMyCustomJSAPI(CefRefPtr<CefV8Context> &context) {
+
+  // Set up handler for att functions
+  CefRefPtr<CefV8Handler> handler = new MyV8Handler();
+
+  // Create V8 object for OSC API
+  CefRefPtr<CefV8Value> containerObject = CefV8Value::CreateObject(NULL);
+
+  // Attach to global V8 object
+  context->GetGlobal()->SetValue("JuxtOSC", containerObject, V8_PROPERTY_ATTRIBUTE_NONE);
+
+  // Set up send message function
+  CefRefPtr<CefV8Value> oscSendMessage = CefV8Value::CreateFunction("send", handler);
+  containerObject->SetValue("send", oscSendMessage, V8_PROPERTY_ATTRIBUTE_NONE);
+}
+
+
 void ClientAppRenderer::OnContextCreated(CefRefPtr<CefBrowser> browser,
                                          CefRefPtr<CefFrame> frame,
                                          CefRefPtr<CefV8Context> context) {
   DelegateSet::iterator it = delegates_.begin();
   for (; it != delegates_.end(); ++it)
     (*it)->OnContextCreated(this, browser, frame, context);
+
+  setupMyCustomJSAPI(context);
 }
 
 void ClientAppRenderer::OnContextReleased(CefRefPtr<CefBrowser> browser,
