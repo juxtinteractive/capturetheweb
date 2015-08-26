@@ -175,6 +175,7 @@ ExternalProject_Add(
     INSTALL_COMMAND ""
 )
 
+
 # Oscpack
 if(NOT DEFINED OSCPACK_URL)
   message(FATAL_ERROR "No download URL specified for Oscpack")
@@ -188,6 +189,13 @@ ExternalProject_Add(
     # BUILD_COMMAND ${CMAKE_COMMAND} -E copy_directory ../syphon ./ COMMAND xcodebuild ARCHS=${CMAKE_OSX_ARCHITECTURES} ONLY_ACTIVE_ARCH=NO -configuration $<CONFIGURATION> build
     INSTALL_COMMAND ""
 )
+
+# Oscpack directory paths.
+ExternalProject_Get_Property(oscpack BINARY_DIR)
+set(OSCPACK_BINARY_DIR          "${BINARY_DIR}/$<CONFIGURATION>")
+set(OSCPACK_BINARY_DIR_DEBUG    "${BINARY_DIR}/Debug")
+set(OSCPACK_BINARY_DIR_RELEASE  "${BINARY_DIR}/Release")
+
 
 
 
@@ -334,9 +342,9 @@ if(OS_LINUX)
   # List of CEF binary files.
   set(CEF_BINARY_FILES
     chrome-sandbox
-    libffmpegsumo.so
+    # libffmpegsumo.so
     libcef.so
-    libpdf.so
+    # libpdf.so
     natives_blob.bin
     snapshot_blob.bin
     )
@@ -346,6 +354,7 @@ if(OS_LINUX)
     cef.pak
     cef_100_percent.pak
     cef_200_percent.pak
+    cef_extensions.pak
     devtools_resources.pak
     icudtl.dat
     locales
@@ -458,14 +467,6 @@ if(OS_MACOSX)
   set(SYPHON_LIB_RELEASE "${BINARY_DIR}/build/Release/Syphon.framework/Versions/A/Syphon")
 
 
-
-
-  # Oscpack directory paths.
-  ExternalProject_Get_Property(oscpack BINARY_DIR)
-  set(OSCPACK_BINARY_DIR          "${BINARY_DIR}/$<CONFIGURATION>")
-  set(OSCPACK_BINARY_DIR_DEBUG    "${BINARY_DIR}/Debug")
-  set(OSCPACK_BINARY_DIR_RELEASE  "${BINARY_DIR}/Release")
-
   # Oscpack library paths.
   set(OSCPACK_LIB_DEBUG   "${BINARY_DIR}/Debug/liboscpack.a")
   set(OSCPACK_LIB_RELEASE "${BINARY_DIR}/Release/liboscpack.a")
@@ -535,18 +536,25 @@ if(OS_WINDOWS)
 
   # CEF wrapper library path.
   ExternalProject_Get_Property(cef BINARY_DIR)
+  set(CEF_LIB_WRAPPER         "${BINARY_DIR}/libcef_dll/$<CONFIGURATION>/libcef_dll_wrapper.lib")
   set(CEF_LIB_WRAPPER_DEBUG   "${BINARY_DIR}/libcef_dll/Debug/libcef_dll_wrapper.lib")
   set(CEF_LIB_WRAPPER_RELEASE "${BINARY_DIR}/libcef_dll/Release/libcef_dll_wrapper.lib")
+
+  # Oscpack library paths.
+  set(OSCPACK_LIB_DEBUG   "${OSCPACK_BINARY_DIR_DEBUG}/oscpack.lib")
+  set(OSCPACK_LIB_RELEASE "${OSCPACK_BINARY_DIR_RELEASE}/oscpack.lib")
 
   # List of CEF binary files.
   set(CEF_BINARY_FILES
     d3dcompiler_43.dll
     d3dcompiler_47.dll
-    ffmpegsumo.dll
+    # ffmpegsumo.dll
     libcef.dll
     libEGL.dll
     libGLESv2.dll
-    pdf.dll
+    # pdf.dll
+    natives_blob.bin
+    snapshot_blob.bin
     )
   if(PROJECT_ARCH STREQUAL "x86")
     # Only used on 32-bit platforms.

@@ -265,6 +265,10 @@ ADD_LOGICAL_TARGET("libcef_lib" "${CEF_LIB_DEBUG}" "${CEF_LIB_RELEASE}")
 SET_CEF_TARGET_OUT_DIR()
 
 
+# Logical target used to link the libcef library.
+ADD_LOGICAL_TARGET("liboscpack" "${OSCPACK_LIB_DEBUG}" "${OSCPACK_LIB_RELEASE}")
+
+
 #
 # Linux configuration.
 #
@@ -285,7 +289,7 @@ if(OS_LINUX)
 
   # Executable target.
   add_executable(${CEF_TARGET} ${CEFCLIENT_SRCS})
-  add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
+  # add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
   target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
 
   # Set rpath so that libraries can be placed next to the executable.
@@ -338,8 +342,8 @@ if(OS_MACOSX)
 
   # Helper executable target.
   add_executable(${CEF_HELPER_TARGET} MACOSX_BUNDLE ${CEFCLIENT_HELPER_SRCS})
-  add_dependencies(${CEF_HELPER_TARGET} libcef_dll_wrapper)
-  target_link_libraries(${CEF_HELPER_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
+  add_dependencies(${CEF_HELPER_TARGET} cef)
+  target_link_libraries(${CEF_HELPER_TARGET} libcef_lib libcef_dll_wrapper liboscpack ${CEF_STANDARD_LIBS})
   set_target_properties(${CEF_HELPER_TARGET} PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/resources/mac/helper-Info.plist
     )
@@ -347,10 +351,13 @@ if(OS_MACOSX)
   # Fix the framework link in the helper executable.
   FIX_MACOSX_HELPER_FRAMEWORK_LINK(${CEF_HELPER_TARGET} ${CEF_HELPER_APP})
 
+  # Logical target used to link the syphon library.
+  ADD_LOGICAL_TARGET("syphon_lib" "${SYPHON_LIB_DEBUG}" "${SYPHON_LIB_RELEASE}")
+
   # Main executable target.
   add_executable(${CEF_TARGET} MACOSX_BUNDLE ${CEFCLIENT_RESOURCES_SRCS} ${CEFCLIENT_SRCS})
-  add_dependencies(${CEF_TARGET} libcef_dll_wrapper "${CEF_HELPER_TARGET}")
-  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS} "-framework OpenGL")
+  add_dependencies(${CEF_TARGET} cef syphon oscpack "${CEF_HELPER_TARGET}")
+  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper syphon_lib liboscpack ${CEF_STANDARD_LIBS} "-framework OpenGL")
   set_target_properties(${CEF_TARGET} PROPERTIES
     RESOURCE "${CEFCLIENT_RESOURCES_SRCS}"
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/resources/mac/Info.plist
@@ -403,8 +410,10 @@ if(OS_WINDOWS)
 
   # Executable target.
   add_executable(${CEF_TARGET} WIN32 ${CEFCLIENT_SRCS})
-  add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
-  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS} "glu32.lib" "opengl32.lib")
+  add_dependencies(${CEF_TARGET} cef oscpack)
+
+  ADD_LOGICAL_TARGET("libcef_dll_wrapper" "${CEF_LIB_WRAPPER_DEBUG}" "${CEF_LIB_WRAPPER_RELEASE}")
+  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper liboscpack ${CEF_STANDARD_LIBS} "glu32.lib" "opengl32.lib")
 
   if(USE_SANDBOX)
     # Logical target used to link the cef_sandbox library.
