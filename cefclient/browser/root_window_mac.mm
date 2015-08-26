@@ -15,6 +15,15 @@
 #include "cefclient/browser/window_test.h"
 #include "cefclient/common/client_switches.h"
 
+// Sizes for URL bar layout.
+#define BUTTON_HEIGHT   22
+#define BUTTON_WIDTH    72
+#define BUTTON_MARGIN   8
+#define URLBAR_HEIGHT   32
+
+#define WIDTH_FIELD_TAG 100
+#define HEIGHT_FIELD_TAG 101
+
 // Receives notifications from controls and the browser window. Will delete
 // itself when done.
 @interface RootWindowDelegate : NSObject <NSWindowDelegate> {
@@ -34,6 +43,9 @@
 - (IBAction)reload:(id)sender;
 - (IBAction)stopLoading:(id)sender;
 - (IBAction)takeURLStringValueFrom:(NSTextField *)sender;
+- (IBAction)setWidth:(NSTextField *)sender;
+- (IBAction)setHeight:(NSTextField *)sender;
+- (void)windowDidResize:(NSNotification *)notification;
 @end
 
 @implementation RootWindowDelegate
@@ -110,6 +122,72 @@
   std::string urlStr = [url UTF8String];
   browser->GetMainFrame()->LoadURL(urlStr);
 }
+
+- (IBAction)setWidth:(NSTextField *)sender {
+  CefRefPtr<CefBrowser> browser = root_window_->GetBrowser();
+  if (!browser.get())
+    return;
+
+  // We are not allowed to access the main window handle unless we're on the CEF UI thread
+//  if (!CefCurrentlyOn(TID_UI)) {
+//    // Execute on the UI thread.
+//    CefPostTask(TID_UI, base::Bind(&resizeIt, width, height));
+//    return;
+//  }
+
+  NSString *widthStr = [sender stringValue];
+
+  NSWindow *window = root_window_->GetWindowHandle().window;
+  NSRect windowFrame = window.frame;
+
+
+  int width = widthStr.intValue;
+  int height = windowFrame.size.height;
+  NSRect newFrame = window.frame;
+  newFrame.size.width = width > 0 ? width : 1;
+  newFrame.size.height = height > 0 ? height : 1;
+
+  [window setFrame:newFrame display:YES];
+}
+
+- (IBAction)setHeight:(NSTextField *)sender {
+  CefRefPtr<CefBrowser> browser = root_window_->GetBrowser();
+  if (!browser.get())
+    return;
+
+  // We are not allowed to access the main window handle unless we're on the CEF UI thread
+  //  if (!CefCurrentlyOn(TID_UI)) {
+  //    // Execute on the UI thread.
+  //    CefPostTask(TID_UI, base::Bind(&resizeIt, width, height));
+  //    return;
+  //  }
+
+  NSString *heightStr = [sender stringValue];
+
+  NSWindow *window = root_window_->GetWindowHandle().window;
+  NSRect windowFrame = window.frame;
+  NSView *contentView = [window contentView];
+  NSRect contentFrame = contentView.frame;
+
+  int width = windowFrame.size.width;
+  int height = heightStr.intValue + (windowFrame.size.height - contentFrame.size.height) + URLBAR_HEIGHT;
+  NSRect newFrame = window.frame;
+  newFrame.size.width = width > 0 ? width : 1;
+  newFrame.size.height = height > 0 ? height : 1;
+
+  [window setFrame:newFrame display:YES];
+}
+
+- (void)windowDidResize:(NSNotification *)notification {
+  NSWindow *window = root_window_->GetWindowHandle().window;
+  NSView *contentView = [window contentView];
+  NSRect newFrame = contentView.frame;
+  NSTextField *widthText = [contentView viewWithTag:WIDTH_FIELD_TAG];
+  NSTextField *heightText = [contentView viewWithTag:HEIGHT_FIELD_TAG];
+  [widthText setStringValue: [@(newFrame.size.width) stringValue]];
+  [heightText setStringValue: [@(newFrame.size.height - URLBAR_HEIGHT) stringValue]];
+}
+
 
 // Called when we are activated (when we gain focus).
 - (void)windowDidBecomeKey:(NSNotification*)notification {
@@ -204,12 +282,6 @@
 namespace client {
 
 namespace {
-
-// Sizes for URL bar layout.
-#define BUTTON_HEIGHT   22
-#define BUTTON_WIDTH    72
-#define BUTTON_MARGIN   8
-#define URLBAR_HEIGHT   32
 
 NSButton* MakeButton(NSRect* rect, NSString* title, NSView* parent) {
   NSButton* button = [[[NSButton alloc] initWithFrame:*rect] autorelease];
@@ -522,6 +594,26 @@ void RootWindowMac::CreateRootWindow(const CefBrowserSettings& settings) {
     [stop_button_ setTarget:delegate];
     [stop_button_ setAction:@selector(stopLoading:)];
     [stop_button_ setEnabled:NO];
+
+    NSTextField* widthTxt = [[NSTextField alloc] initWithFrame:button_rect];
+    [contentView addSubview:widthTxt];
+    [widthTxt setAutoresizingMask:(NSViewMinYMargin)];
+    [widthTxt setTarget:delegate];
+    [widthTxt setAction:@selector(setWidth:)];
+    [[widthTxt cell] setWraps:NO];
+    [[widthTxt cell] setScrollable:YES];
+    button_rect.origin.x += BUTTON_WIDTH;
+    [widthTxt setTag: WIDTH_FIELD_TAG];
+
+    NSTextField* heightTxt = [[NSTextField alloc] initWithFrame:button_rect];
+    [contentView addSubview:heightTxt];
+    [heightTxt setAutoresizingMask:(NSViewMinYMargin)];
+    [heightTxt setTarget:delegate];
+    [heightTxt setAction:@selector(setHeight:)];
+    [[heightTxt cell] setWraps:NO];
+    [[heightTxt cell] setScrollable:YES];
+    [heightTxt setTag: HEIGHT_FIELD_TAG];
+    button_rect.origin.x += BUTTON_WIDTH;
 
     // Create the URL text field.
     button_rect.origin.x += BUTTON_MARGIN;
