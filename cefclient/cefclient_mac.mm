@@ -30,6 +30,7 @@
 #include "include/base/cef_bind.h"
 #include "include/wrapper/cef_closure_task.h"
 
+scoped_refptr<client::RootWindow> first_window;
 
 namespace {
 
@@ -166,7 +167,7 @@ void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
   [menubar addItem:testItem];
 
   // Create the first window.
-  client::MainContext::Get()->GetRootWindowManager()->CreateRootWindow(
+  first_window = client::MainContext::Get()->GetRootWindowManager()->CreateRootWindow(
       true,             // Show controls.
       with_osr_,        // Use off-screen rendering.
       CefRect(),        // Use default system size.
@@ -203,22 +204,6 @@ void AddMenuItem(NSMenu *menu, NSString* label, int idval) {
 namespace client {
 namespace {
 
-CefRefPtr<CefBrowser> getBrowser() {
-  // Retrieve the active RootWindow.
-  NSWindow* key_window = [[ClientApplication sharedApplication] keyWindow];
-  if (!key_window) {
-    std::cout << "football" << std::endl;
-    return NULL;
-  }
-
-  scoped_refptr<client::RootWindow> root_window =
-      client::RootWindow::GetForNSWindow(key_window);
-
-  CefRefPtr<CefBrowser> browser = root_window->GetBrowser();
-
-  return browser;
-}
-
 void resizeIt(int width, int height) {
   // We are not allowed to access the main window handle unless we're on the CEF UI thread
   if (!CefCurrentlyOn(TID_UI)) {
@@ -227,7 +212,7 @@ void resizeIt(int width, int height) {
     return;
   }
 
-  CefRefPtr<CefBrowser> browser = getBrowser();
+  CefRefPtr<CefBrowser> browser = first_window->GetBrowser();
   if(!browser.get())
     return;
 
@@ -242,8 +227,13 @@ void resizeIt(int width, int height) {
 }
 
 void gotoURL(const char *msgUrl) {
+  if (!CefCurrentlyOn(TID_UI)) {
+    // Execute on the UI thread.
+    CefPostTask(TID_UI, base::Bind(&gotoURL, msgUrl));
+    return;
+  }
 
-  CefRefPtr<CefBrowser> browser = getBrowser();
+  CefRefPtr<CefBrowser> browser = first_window->GetBrowser();
   if(!browser.get())
     return;
 
@@ -261,7 +251,13 @@ void gotoURL(const char *msgUrl) {
 }
 
 void moveMouse(float val) {
-  CefRefPtr<CefBrowser> browser = getBrowser();
+  if (!CefCurrentlyOn(TID_UI)) {
+    // Execute on the UI thread.
+    CefPostTask(TID_UI, base::Bind(&moveMouse, val));
+    return;
+  }
+
+  CefRefPtr<CefBrowser> browser = first_window->GetBrowser();
   std::cout << "check" << std::endl;
   if(!browser.get())
     return;
