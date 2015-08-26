@@ -6,190 +6,245 @@
 # Source files.
 #
 
-# cefclient sources.
-set(CEFCLIENT_SRCS
-  binding_test.cc
-  binding_test.h
-  bytes_write_handler.cc
-  bytes_write_handler.h
-  client_app.cc
-  client_app.h
-  client_app_delegates.cc
-  client_handler.cc
-  client_handler.h
-  client_renderer.cc
-  client_renderer.h
-  client_switches.cc
-  client_switches.h
-  dialog_test.cc
-  dialog_test.h
-  main_context.cc
-  main_context.h
-  main_context_impl.cc
-  main_context_impl.h
-  main_message_loop.cc
-  main_message_loop.h
-  main_message_loop_std.cc
-  main_message_loop_std.h
-  osr_dragdrop_events.h
-  osr_renderer.cc
-  osr_renderer.h
-  performance_test.cc
-  performance_test.h
-  performance_test_setup.h
-  performance_test_tests.cc
-  resource.h
-  resource_util.h
-  scheme_test.cc
-  scheme_test.h
-  test_runner.cc
-  test_runner.h
-  window_test.cc
-  window_test.h
+# cefclient browser sources.
+set(CEFCLIENT_BROWSER_BROWSER_SRCS
+  browser/binding_test.cc
+  browser/binding_test.h
+  browser/browser_window.cc
+  browser/browser_window.h
+  browser/bytes_write_handler.cc
+  browser/bytes_write_handler.h
+  browser/client_app_browser.cc
+  browser/client_app_browser.h
+  browser/client_app_delegates_browser.cc
+  browser/client_handler.cc
+  browser/client_handler.h
+  browser/client_handler_osr.cc
+  browser/client_handler_osr.h
+  browser/client_handler_std.cc
+  browser/client_handler_std.h
+  browser/client_types.h
+  browser/dialog_test.cc
+  browser/dialog_test.h
+  browser/geometry_util.cc
+  browser/geometry_util.h
+  browser/main_context.cc
+  browser/main_context.h
+  browser/main_context_impl.cc
+  browser/main_context_impl.h
+  browser/main_message_loop.cc
+  browser/main_message_loop.h
+  browser/main_message_loop_std.cc
+  browser/main_message_loop_std.h
+  browser/osr_dragdrop_events.h
+  browser/osr_renderer.cc
+  browser/osr_renderer.h
+  browser/resource.h
+  browser/resource_util.h
+  browser/root_window.cc
+  browser/root_window.h
+  browser/root_window_manager.cc
+  browser/root_window_manager.h
+  browser/scheme_test.cc
+  browser/scheme_test.h
+  browser/temp_window.h
+  browser/test_runner.cc
+  browser/test_runner.h
+  browser/urlrequest_test.cc
+  browser/urlrequest_test.h
+  browser/window_test.cc
+  browser/window_test.h
   )
-set(CEFCLIENT_SRCS_LINUX
+source_group(cefclient\\\\browser FILES ${CEFCLIENT_BROWSER_BROWSER_SRCS})
+
+set(CEFCLIENT_BROWSER_SRCS
+  ${CEFCLIENT_BROWSER_BROWSER_SRCS}
+  )
+
+# cefclient common sources.
+set(CEFCLIENT_COMMON_COMMON_SRCS
+  common/client_app.cc
+  common/client_app.h
+  common/client_app_delegates_common.cc
+  common/client_app_other.cc
+  common/client_app_other.h
+  common/client_switches.cc
+  common/client_switches.h
+  common/scheme_test_common.cc
+  common/scheme_test_common.h
+  )
+source_group(cefclient\\\\common FILES ${CEFCLIENT_COMMON_COMMON_SRCS})
+
+set(CEFCLIENT_COMMON_SRCS
+  ${CEFCLIENT_COMMON_COMMON_SRCS}
+  )
+
+# cefclient renderer sources.
+set(CEFCLIENT_RENDERER_RENDERER_SRCS
+  renderer/client_app_delegates_renderer.cc
+  renderer/client_app_renderer.cc
+  renderer/client_app_renderer.h
+  renderer/client_renderer.cc
+  renderer/client_renderer.h
+  renderer/performance_test.cc
+  renderer/performance_test.h
+  renderer/performance_test_setup.h
+  renderer/performance_test_tests.cc
+  )
+source_group(cefclient\\\\renderer FILES ${CEFCLIENT_RENDERER_RENDERER_SRCS})
+
+set(CEFCLIENT_RENDERER_SRCS
+  ${CEFCLIENT_RENDERER_RENDERER_SRCS}
+  )
+
+#cefclient Linux sources
+set(CEFCLIENT_LINUX_SRCS
   cefclient_gtk.cc
-  client_handler_gtk.cc
-  dialog_handler_gtk.cc
-  dialog_handler_gtk.h
-  main_context_impl_posix.cc
-  osr_widget_gtk.cc
-  osr_widget_gtk.h
-  print_handler_gtk.cc
-  print_handler_gtk.h
-  resource_util_linux.cc
-  resource_util_posix.cc
-  window_test_gtk.cc
   )
-set(CEFCLIENT_SRCS_MACOSX
+source_group(cefclient FILES ${CEFCLIENT_LINUX_SRCS})
+
+set(CEFCLIENT_LINUX_BROWSER_SRCS
+  browser/browser_window_osr_gtk.cc
+  browser/browser_window_osr_gtk.h
+  browser/browser_window_std_gtk.cc
+  browser/browser_window_std_gtk.h
+  browser/dialog_handler_gtk.cc
+  browser/dialog_handler_gtk.h
+  browser/main_context_impl_posix.cc
+  browser/print_handler_gtk.cc
+  browser/print_handler_gtk.h
+  browser/resource_util_linux.cc
+  browser/resource_util_posix.cc
+  browser/root_window_gtk.cc
+  browser/root_window_gtk.h
+  browser/temp_window_x11.cc
+  browser/temp_window_x11.h
+  browser/window_test_gtk.cc
+  )
+source_group(cefclient\\\\browser FILES ${CEFCLIENT_LINUX_BROWSER_SRCS})
+
+set(CEFCLIENT_LINUX_SRCS
+  ${CEFCLIENT_LINUX_SRCS}
+  ${CEFCLIENT_LINUX_BROWSER_SRCS}
+  )
+
+#cefclient Mac OS X sources
+set(CEFCLIENT_MACOSX_SRCS
   cefclient_mac.mm
-  client_handler_mac.mm
-  main_context_impl_posix.cc
-  osr_widget_mac.h
-  osr_widget_mac.mm
-  resource_util_mac.mm
-  resource_util_posix.cc
-  window_test_mac.mm
   )
-set(CEFCLIENT_SRCS_WINDOWS
-  cefclient.exe.manifest
-  cefclient.rc
-  cefclient_win.cc
-  client_handler_win.cc
-  main_context_impl_win.cc
-  main_message_loop_multithreaded_win.cc
-  main_message_loop_multithreaded_win.h
-  osr_dragdrop_win.cc
-  osr_dragdrop_win.h
-  osr_widget_win.cc
-  osr_widget_win.h
-  resource_util_win.cc
-  util_win.cc
-  util_win.h
-  window_test_win.cc
-  )
-APPEND_PLATFORM_SOURCES(CEFCLIENT_SRCS)
-source_group(cefclient FILES ${CEFCLIENT_SRCS})
+source_group(cefclient FILES ${CEFCLIENT_MACOSX_SRCS})
 
-set(CEFCLIENT_RES_SRCS
-  res/binding.html
-  res/dialogs.html
-  res/localstorage.html
-  res/logo.png
-  res/osr_test.html
-  res/other_tests.html
-  res/performance.html
-  res/performance2.html
-  res/transparency.html
-  res/window.html
-  res/xmlhttprequest.html
+set(CEFCLIENT_MACOSX_BROWSER_SRCS
+  browser/browser_window_osr_mac.h
+  browser/browser_window_osr_mac.mm
+  browser/browser_window_std_mac.h
+  browser/browser_window_std_mac.mm
+  browser/main_context_impl_posix.cc
+  browser/resource_util_mac.mm
+  browser/resource_util_posix.cc
+  browser/root_window_mac.h
+  browser/root_window_mac.mm
+  browser/temp_window_mac.h
+  browser/temp_window_mac.mm
+  browser/window_test_mac.mm
   )
-set(CEFCLIENT_RES_SRCS_WINDOWS
-  res/cefclient.ico
-  res/small.ico
-  )
-APPEND_PLATFORM_SOURCES(CEFCLIENT_RES_SRCS)
-source_group(cefclient\\\\res FILES ${CEFCLIENT_RES_SRCS})
+source_group(cefclient\\\\browser FILES ${CEFCLIENT_MACOSX_BROWSER_SRCS})
 
-set(CEFCLIENT_SRCS
-  ${CEFCLIENT_SRCS}
-  ${CEFCLIENT_RES_SRCS}
+set(CEFCLIENT_MACOSX_SRCS
+  ${CEFCLIENT_MACOSX_SRCS}
+  ${CEFCLIENT_MACOSX_BROWSER_SRCS}
   )
 
-# cefclient helper sources.
-set(CEFCLIENT_HELPER_SRCS_MACOSX
-  binding_test.cc
-  binding_test.h
-  client_app.cc
-  client_app.h
-  client_app_delegates.cc
-  client_handler.cc
-  client_handler.h
-  client_handler_mac.mm
-  client_renderer.cc
-  client_renderer.h
-  client_switches.cc
-  client_switches.h
-  dialog_test.cc
-  dialog_test.h
-  main_context.cc
-  main_context.h
-  main_message_loop.cc
-  main_message_loop.h
-  performance_test.cc
-  performance_test.h
-  performance_test_setup.h
-  performance_test_tests.cc
+# cefclient Mac OS X helper sources.
+set(CEFCLIENT_HELPER_SRCS
   process_helper_mac.cc
-  resource.h
-  resource_util.h
-  resource_util_mac.mm
-  resource_util_posix.cc
-  scheme_test.cc
-  scheme_test.h
-  test_runner.cc
-  test_runner.h
-  window_test.cc
-  window_test.h
-  window_test_mac.mm
   )
-APPEND_PLATFORM_SOURCES(CEFCLIENT_HELPER_SRCS)
 source_group(cefclient FILES ${CEFCLIENT_HELPER_SRCS})
 
+set(CEFCLIENT_MACOSX_HELPER_SRCS
+  ${CEFCLIENT_HELPER_SRCS}
+  )
+
+#cefclient Windows sources
+set(CEFCLIENT_WINDOWS_SRCS
+  cefclient_win.cc
+  )
+source_group(cefclient FILES ${CEFCLIENT_WINDOWS_SRCS})
+
+set(CEFCLIENT_WINDOWS_BROWSER_SRCS
+  browser/browser_window_osr_win.cc
+  browser/browser_window_osr_win.h
+  browser/browser_window_std_win.cc
+  browser/browser_window_std_win.h
+  browser/main_context_impl_win.cc
+  browser/main_message_loop_multithreaded_win.cc
+  browser/main_message_loop_multithreaded_win.h
+  browser/osr_dragdrop_win.cc
+  browser/osr_dragdrop_win.h
+  browser/osr_window_win.cc
+  browser/osr_window_win.h
+  browser/resource_util_win.cc
+  browser/root_window_win.cc
+  browser/root_window_win.h
+  browser/temp_window_win.cc
+  browser/temp_window_win.h
+  browser/util_win.cc
+  browser/util_win.h
+  browser/window_test_win.cc
+  )
+source_group(cefclient\\\\browser FILES ${CEFCLIENT_WINDOWS_BROWSER_SRCS})
+
+set(CEFCLIENT_WINDOWS_RESOURCES_WIN_SRCS
+  resources/win/cefclient.exe.manifest
+  resources/win/cefclient.ico
+  resources/win/cefclient.rc
+  resources/win/small.ico
+  )
+source_group(cefclient\\\\resources\\\\win FILES ${CEFCLIENT_WINDOWS_RESOURCES_WIN_SRCS})
+
+set(CEFCLIENT_WINDOWS_SRCS
+  ${CEFCLIENT_WINDOWS_SRCS}
+  ${CEFCLIENT_WINDOWS_BROWSER_SRCS}
+  ${CEFCLIENT_WINDOWS_RESOURCES_WIN_SRCS}
+  )
+
 # cefclient resources.
-set(CEFCLIENT_RESOURCES_MAC_SRCS_MACOSX
-  mac/Info.plist
-  mac/cefclient.icns
+set(CEFCLIENT_RESOURCES_RESOURCES_SRCS
+  resources/binding.html
+  resources/dialogs.html
+  resources/localstorage.html
+  resources/logo.png
+  resources/osr_test.html
+  resources/other_tests.html
+  resources/pdf.html
+  resources/pdf.pdf
+  resources/performance.html
+  resources/performance2.html
+  resources/transparency.html
+  resources/urlrequest.html
+  resources/window.html
+  resources/xmlhttprequest.html
   )
-APPEND_PLATFORM_SOURCES(CEFCLIENT_RESOURCES_MAC_SRCS)
-source_group(cefclient\\\\mac FILES ${CEFCLIENT_RESOURCES_MAC_SRCS})
+source_group(cefclient\\\\resources FILES ${CEFCLIENT_RESOURCES_RESOURCES_SRCS})
 
-set(CEFCLIENT_RESOURCES_MAC_ENGLISH_LPROJ_SRCS_MACOSX
-  mac/English.lproj/InfoPlist.strings
-  mac/English.lproj/MainMenu.xib
+set(CEFCLIENT_RESOURCES_RESOURCES_MAC_SRCS_MACOSX
+  resources/mac/Info.plist
+  resources/mac/cefclient.icns
   )
-APPEND_PLATFORM_SOURCES(CEFCLIENT_RESOURCES_MAC_ENGLISH_LPROJ_SRCS)
-source_group(cefclient\\\\mac\\\\English.lproj FILES ${CEFCLIENT_RESOURCES_MAC_ENGLISH_LPROJ_SRCS})
+APPEND_PLATFORM_SOURCES(CEFCLIENT_RESOURCES_RESOURCES_MAC_SRCS)
+source_group(cefclient\\\\resources\\\\mac FILES ${CEFCLIENT_RESOURCES_RESOURCES_MAC_SRCS})
 
-set(CEFCLIENT_RESOURCES_RES_SRCS
-  res/binding.html
-  res/dialogs.html
-  res/localstorage.html
-  res/logo.png
-  res/osr_test.html
-  res/other_tests.html
-  res/performance.html
-  res/performance2.html
-  res/transparency.html
-  res/window.html
-  res/xmlhttprequest.html
+set(CEFCLIENT_RESOURCES_RESOURCES_MAC_ENGLISH_LPROJ_SRCS_MACOSX
+  resources/mac/English.lproj/InfoPlist.strings
+  resources/mac/English.lproj/MainMenu.xib
   )
-source_group(cefclient\\\\res FILES ${CEFCLIENT_RESOURCES_RES_SRCS})
+APPEND_PLATFORM_SOURCES(CEFCLIENT_RESOURCES_RESOURCES_MAC_ENGLISH_LPROJ_SRCS)
+source_group(cefclient\\\\resources\\\\mac\\\\English.lproj FILES ${CEFCLIENT_RESOURCES_RESOURCES_MAC_ENGLISH_LPROJ_SRCS})
 
 set(CEFCLIENT_RESOURCES_SRCS
-  ${CEFCLIENT_RESOURCES_MAC_SRCS}
-  ${CEFCLIENT_RESOURCES_MAC_ENGLISH_LPROJ_SRCS}
-  ${CEFCLIENT_RESOURCES_RES_SRCS}
+  ${CEFCLIENT_RESOURCES_RESOURCES_SRCS}
+  ${CEFCLIENT_RESOURCES_RESOURCES_MAC_SRCS}
+  ${CEFCLIENT_RESOURCES_RESOURCES_MAC_ENGLISH_LPROJ_SRCS}
   )
 
 
@@ -206,15 +261,8 @@ endif()
 # Logical target used to link the libcef library.
 ADD_LOGICAL_TARGET("libcef_lib" "${CEF_LIB_DEBUG}" "${CEF_LIB_RELEASE}")
 
-# Logical target used to link the libcef wrapper library.
-ADD_LOGICAL_TARGET("libcef_dll_wrapper" "${CEF_LIB_WRAPPER_DEBUG}" "${CEF_LIB_WRAPPER_RELEASE}")
-
 # Determine the target output directory.
 SET_CEF_TARGET_OUT_DIR()
-
-
-# Logical target used to link the libcef library.
-ADD_LOGICAL_TARGET("liboscpack" "${OSCPACK_LIB_DEBUG}" "${OSCPACK_LIB_RELEASE}")
 
 
 #
@@ -222,6 +270,16 @@ ADD_LOGICAL_TARGET("liboscpack" "${OSCPACK_LIB_DEBUG}" "${OSCPACK_LIB_RELEASE}")
 #
 
 if(OS_LINUX)
+  # All sources required by the "cefclient" target. Generates an executable that
+  # is used for all processes.
+  set(CEFCLIENT_SRCS
+    ${CEFCLIENT_BROWSER_SRCS}
+    ${CEFCLIENT_COMMON_SRCS}
+    ${CEFCLIENT_RENDERER_SRCS}
+    ${CEFCLIENT_RESOURCES_SRCS}
+    ${CEFCLIENT_LINUX_SRCS}
+    )
+
   # Find required libraries and update compiler/linker variables.
   FIND_LINUX_LIBRARIES("gmodule-2.0 gtk+-2.0 gthread-2.0 gtk+-unix-print-2.0 gtkglext-1.0")
 
@@ -242,7 +300,7 @@ if(OS_LINUX)
   # Copy cefclient resource files to the target output directory.
   COPY_FILES("${CEF_TARGET}" "${CEFCLIENT_RESOURCES_SRCS}" "${CMAKE_CURRENT_SOURCE_DIR}" "${CEF_TARGET_OUT_DIR}")
   # Rename the "res" directory to "files".
-  RENAME_DIRECTORY("${CEF_TARGET}" "${CEF_TARGET_OUT_DIR}/res" "${CEF_TARGET_OUT_DIR}/files")
+  RENAME_DIRECTORY("${CEF_TARGET}" "${CEF_TARGET_OUT_DIR}/resources" "${CEF_TARGET_OUT_DIR}/files")
 
   # Set SUID permissions on the chrome-sandbox target.
   SET_LINUX_SUID_PERMISSIONS("${CEF_TARGET}" "${CEF_TARGET_OUT_DIR}/chrome-sandbox")
@@ -254,6 +312,23 @@ endif()
 #
 
 if(OS_MACOSX)
+  # All sources required by the "cefclient" target. Generates an app bundle that
+  # is used only for the browser process.
+  set(CEFCLIENT_SRCS
+    ${CEFCLIENT_BROWSER_SRCS}
+    ${CEFCLIENT_COMMON_SRCS}
+    ${CEFCLIENT_RESOURCES_SRCS}
+    ${CEFCLIENT_MACOSX_SRCS}
+    )
+
+  # All sources required by the "cefclient Helper" target. Generates an app
+  # bundle that is used only for non-browser processes.
+  set(CEFCLIENT_HELPER_SRCS
+    ${CEFCLIENT_COMMON_SRCS}
+    ${CEFCLIENT_RENDERER_SRCS}
+    ${CEFCLIENT_MACOSX_HELPER_SRCS}
+    )
+
   # Output paths for the app bundles.
   set(CEF_APP "${CEF_TARGET_OUT_DIR}/${CEF_TARGET}.app")
   set(CEF_HELPER_APP "${CEF_TARGET_OUT_DIR}/${CEF_HELPER_TARGET}.app")
@@ -261,29 +336,24 @@ if(OS_MACOSX)
   # Variable referenced from Info.plist files.
   set(PRODUCT_NAME "${CEF_TARGET}")
 
-
   # Helper executable target.
   add_executable(${CEF_HELPER_TARGET} MACOSX_BUNDLE ${CEFCLIENT_HELPER_SRCS})
-  add_dependencies(${CEF_HELPER_TARGET} cef oscpack)
-  target_link_libraries(${CEF_HELPER_TARGET} libcef_lib libcef_dll_wrapper liboscpack ${CEF_STANDARD_LIBS})
+  add_dependencies(${CEF_HELPER_TARGET} libcef_dll_wrapper)
+  target_link_libraries(${CEF_HELPER_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
   set_target_properties(${CEF_HELPER_TARGET} PROPERTIES
-    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/mac/helper-Info.plist
+    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/resources/mac/helper-Info.plist
     )
 
   # Fix the framework link in the helper executable.
   FIX_MACOSX_HELPER_FRAMEWORK_LINK(${CEF_HELPER_TARGET} ${CEF_HELPER_APP})
 
-
-  # Logical target used to link the syphon library.
-  ADD_LOGICAL_TARGET("syphon_lib" "${SYPHON_LIB_DEBUG}" "${SYPHON_LIB_RELEASE}")
-
   # Main executable target.
   add_executable(${CEF_TARGET} MACOSX_BUNDLE ${CEFCLIENT_RESOURCES_SRCS} ${CEFCLIENT_SRCS})
-  add_dependencies(${CEF_TARGET} ${CEF_HELPER_TARGET} cef syphon oscpack)
-  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper syphon_lib liboscpack ${CEF_STANDARD_LIBS} "-framework OpenGL")
+  add_dependencies(${CEF_TARGET} libcef_dll_wrapper "${CEF_HELPER_TARGET}")
+  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS} "-framework OpenGL")
   set_target_properties(${CEF_TARGET} PROPERTIES
     RESOURCE "${CEFCLIENT_RESOURCES_SRCS}"
-    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/mac/Info.plist
+    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/resources/mac/Info.plist
     )
 
   # Copy files into the main app bundle.
@@ -298,10 +368,6 @@ if(OS_MACOSX)
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CEF_BINARY_DIR}/Chromium Embedded Framework.framework"
             "${CEF_APP}/Contents/Frameworks/Chromium Embedded Framework.framework"
-    # Copy the Syphon framework into the Frameworks directory.
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${SYPHON_BINARY_DIR}/Syphon.framework"
-            "${CEF_APP}/Contents/Frameworks/Syphon.framework"
     VERBATIM
     )
 
@@ -314,7 +380,7 @@ if(OS_MACOSX)
   if(NOT ${CMAKE_GENERATOR} STREQUAL "Xcode")
     # Manually process and copy over resource files.
     # The Xcode generator handles this via the set_target_properties RESOURCE directive.
-    set(PREFIXES "mac/" "res/")  # Remove these prefixes from input file paths.
+    set(PREFIXES "resources/mac/" "resources/")  # Remove these prefixes from input file paths.
     COPY_MACOSX_RESOURCES("${CEFCLIENT_RESOURCES_SRCS}" "${PREFIXES}" "${CEF_TARGET}" "${CMAKE_CURRENT_SOURCE_DIR}" "${CEF_APP}")
   endif()
 endif()
@@ -325,8 +391,19 @@ endif()
 #
 
 if(OS_WINDOWS)
+  # All sources required by the "cefclient" target. Generates an executable that
+  # is used for all processes.
+  set(CEFCLIENT_SRCS
+    ${CEFCLIENT_BROWSER_SRCS}
+    ${CEFCLIENT_COMMON_SRCS}
+    ${CEFCLIENT_RENDERER_SRCS}
+    ${CEFCLIENT_RESOURCES_SRCS}
+    ${CEFCLIENT_WINDOWS_SRCS}
+    )
+
   # Executable target.
   add_executable(${CEF_TARGET} WIN32 ${CEFCLIENT_SRCS})
+  add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
   target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS} "glu32.lib" "opengl32.lib")
 
   if(USE_SANDBOX)
@@ -336,7 +413,7 @@ if(OS_WINDOWS)
   endif()
 
   # Add the custom manifest files to the executable.
-  ADD_WINDOWS_MANIFEST("${CEF_TARGET}")
+  ADD_WINDOWS_MANIFEST("${CMAKE_CURRENT_SOURCE_DIR}/resources/win" "${CEF_TARGET}")
 
   # Copy CEF binary and resource files to the target output directory.
   COPY_FILES("${CEF_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
